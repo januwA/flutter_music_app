@@ -13,9 +13,9 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   List<Song> _songs = <Song>[]; // 本地音乐列表
-  PlayerState playerState = PlayerState.stopped; // 播放状态
+  PlayerState playerState; // 播放状态
   Song playingSong; // 正在播放的音乐
-  int currentSongIndex; // 增在播放音乐的index
+  int currentSongIndex; // 正在播放音乐的index
 
   // 下一首歌
   Song get nextSong {
@@ -25,7 +25,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   bool _isLoading = true; // 是否在加载(songs)状态
-  Duration duration; // 是否在加载状态()songs
+  Duration duration;
   Duration position;
 
   @override
@@ -35,7 +35,7 @@ class _MyAppState extends State<MyApp> {
   }
 
   void _initPlayer() async {
-    _isLoading = false;
+    _isLoading = true;
     var songs = await MusicFinder.allSongs();
     setState(() {
       _songs = songs;
@@ -60,41 +60,43 @@ class _MyAppState extends State<MyApp> {
         position = duration;
       });
     });
-
-    audioPlayer.setErrorHandler((msg) {
-      print('audioPlayer error : $msg');
-      setState(() {
-        playerState = PlayerState.stopped;
-        duration = new Duration(seconds: 0);
-        position = new Duration(seconds: 0);
-      });
-    });
   }
 
+  // 播放
   play(songUrl) async {
     final result = await audioPlayer.play(songUrl);
     if (result == 1) setState(() => playerState = PlayerState.playing);
   }
 
-  // add a isLocal parameter to play a local file
+  // 播放
   playLocal(songUrl) async {
     final result = await audioPlayer.play(songUrl);
     if (result == 1) setState(() => playerState = PlayerState.playing);
   }
 
+  // 暂停音乐
   pause() async {
     final result = await audioPlayer.pause();
     if (result == 1) setState(() => playerState = PlayerState.paused);
   }
 
+  // 结束音乐
   stop() async {
     final result = await audioPlayer.stop();
     if (result == 1) setState(() => playerState = PlayerState.stopped);
   }
 
+  // 完成一首后，进入下一首
   void onComplete() {
     setState(() => playerState = PlayerState.stopped);
     playLocal(nextSong.uri);
+  }
+
+  // 切换了正在播放的音乐事件
+  void _switchMusic(Song clickedSong) async {
+    playingSong = clickedSong;
+    await stop();
+    await playLocal(playingSong.uri);
   }
 
   @override
@@ -115,21 +117,21 @@ class _MyAppState extends State<MyApp> {
               : ListView.builder(
                   itemCount: _songs.length,
                   itemBuilder: (context, int index) {
-                    Song s = _songs[index];
+                    Song tapSong = _songs[index];
                     return new ListTile(
                       leading: CircleAvatar(
                         // 没有专辑图片就用文字代替
-                        child: s.albumArt == null
-                            ? Text(s.title[0])
+                        child: tapSong.albumArt == null
+                            ? Text(tapSong.title[0])
                             : new Image.file(
                                 new File.fromUri(
-                                  Uri.parse(s.albumArt),
+                                  Uri.parse(tapSong.albumArt),
                                 ),
                                 fit: BoxFit.cover,
                                 filterQuality: FilterQuality.low,
                               ),
                       ),
-                      title: Text(s.title),
+                      title: Text(tapSong.title),
                       onTap: () async {
                         currentSongIndex = index;
 
@@ -144,21 +146,26 @@ class _MyAppState extends State<MyApp> {
 
                         if (playerState == PlayerState.playing) {
                           // 暂停
+                          print('暂停');
                           // 在列表上点击你应该使用"stop()"而不是"pause()",因为stop会让song真正的结束。
-                          if (s.id == playingSong.id) {
+                          if (tapSong == playingSong) {
                             await pause();
                           } else {
-                            await stop();
-                            await playLocal(s.uri);
-                            playingSong = s;
+                            _switchMusic(tapSong);
                           }
                         } else {
                           // 播放
-                          await playLocal(s.uri);
+                          print('播放');
                           if (playingSong == null) {
-                            playingSong = s;
-                          } else if (s.id != playingSong.id) {
-                            playingSong = s;
+                            // 第一次进入直接播放点击歌曲
+                            playingSong = tapSong;
+                            await playLocal(playingSong.uri);
+                          } else if (tapSong != playingSong) {
+                            // 在列表中点击了其他歌曲
+                            _switchMusic(tapSong);
+                          } else if (tapSong == playingSong) {
+                            // 点击了同一首歌曲
+                            await playLocal(playingSong.uri);
                           }
                         }
                       },
