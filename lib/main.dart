@@ -22,7 +22,12 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
   List<Song> _songs = <Song>[]; // 本地音乐列表
   PlayerState playerState; // 播放状态
   Song playingSong; // 正在播放的音乐
-  int currentSongIndex; // 正在播放音乐的index
+  int currentSongIndex = -1; // 正在播放音乐的index
+  bool _isLoading = true; // 是否在加载(songs)状态
+  Duration duration; // 总时长
+  Duration position; // 当前播放位置
+  Animation<Offset> bottomViewAnimation;
+  AnimationController bottomViewAnimationCtrl;
 
   // 下一首歌
   Song get nextSong {
@@ -32,11 +37,13 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
     return ns;
   }
 
-  bool _isLoading = true; // 是否在加载(songs)状态
-  Duration duration;
-  Duration position;
-  Animation<Offset> bottomViewAnimation;
-  AnimationController bottomViewAnimationCtrl;
+  int get songsLen {
+    if (_songs != null) {
+      return _songs.length;
+    } else {
+      return 0;
+    }
+  }
 
   @override
   void initState() {
@@ -51,13 +58,6 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
     super.dispose();
   }
 
-  @override
-  void reassemble() {
-    _initPlayer();
-    _initBottomViewAnimation();
-    super.reassemble();
-  }
-
   /**
    * * 初始化获取用户本地的音乐列表
    */
@@ -70,15 +70,19 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
     });
 
     audioPlayer ??= new MusicFinder();
-    audioPlayer.setDurationHandler((Duration d) => setState(() {
-          // 持续时间
-          duration = d;
-        }));
+    audioPlayer.setDurationHandler((Duration d) {
+      setState(() {
+        // 持续时间
+        duration = d;
+      });
+    });
 
-    audioPlayer.setPositionHandler((Duration p) => setState(() {
-          // 位置
-          position = p;
-        }));
+    audioPlayer.setPositionHandler((Duration p) {
+      setState(() {
+        // 位置
+        position = p;
+      });
+    });
 
     audioPlayer.setCompletionHandler(() {
       // 完成时
@@ -164,7 +168,8 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
     Widget home() {
       if (!_isLoading) {
         return new Scaffold(
-          appBar: AppBar(title: Text('Music App')),
+          appBar: AppBar(
+              title: Text('Music App [${songsLen}/${currentSongIndex + 1}]')),
           body: _songs.isEmpty
               ? EmptySongs()
               : Stack(
@@ -230,6 +235,8 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                       playerState: playerState,
                       pause: pause,
                       playLocal: playLocal,
+                      currentTime:
+                          position == null ? 0 : position.inMilliseconds,
                     ),
                   ],
                 ),

@@ -12,7 +12,10 @@ class PlayingSongView extends StatelessWidget {
     this.playerState,
     this.pause,
     this.playLocal,
+    this.currentTime,
   }) : super(key: key);
+
+  final int currentTime; // 当前歌曲播放到哪(毫秒)
 
   // 动画
   final Animation<Offset> position;
@@ -28,6 +31,10 @@ class PlayingSongView extends StatelessWidget {
 
   // 播放事件
   final playLocal;
+
+  double _ourMap(num v, num start1, num stop1, num start2, num stop2) {
+    return (v - start1) / (stop1 - start1) * (stop2 - start2) + start2;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -52,20 +59,32 @@ class PlayingSongView extends StatelessWidget {
                   ),
                   title: OverflowText(playingSong.title),
                   subtitle: OverflowText(playingSong.album),
-                  trailing: IconButton(
-                    icon: Icon(
-                      playerState != PlayerState.playing
-                          ? Icons.play_arrow
-                          : Icons.pause,
-                      color: Theme.of(context).primaryColor,
-                    ),
-                    onPressed: () async {
-                      if (playerState == PlayerState.playing) {
-                        await pause();
-                      } else {
-                        await playLocal(playingSong.uri);
-                      }
-                    },
+                  trailing: Stack(
+                    alignment: AlignmentDirectional.center,
+                    children: <Widget>[
+                      CircularProgressIndicator(
+                        backgroundColor: Colors.grey[200],
+                        strokeWidth: 2.0,
+                        value:
+                            _ourMap(currentTime, 0, playingSong.duration, 0, 1),
+                        // value: 0.3,
+                      ),
+                      IconButton(
+                        icon: Icon(
+                          playerState != PlayerState.playing
+                              ? Icons.play_arrow
+                              : Icons.pause,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                        onPressed: () async {
+                          if (playerState == PlayerState.playing) {
+                            await pause();
+                          } else {
+                            await playLocal(playingSong.uri);
+                          }
+                        },
+                      )
+                    ],
                   ),
                 ),
               ),
