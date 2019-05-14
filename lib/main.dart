@@ -1,10 +1,17 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/animation.dart';
 import 'package:flute_music_player/flute_music_player.dart';
+import 'package:flutter_music/shared/widgets/song_title.dart';
+import 'package:flutter_music/shared/widgets/page_loading.dart';
+import 'package:flutter_music/shared/widgets/playing_song.dart';
+import 'package:flutter_music/shared/widgets/overflow_text.dart';
+import 'package:flutter_music/shared/widgets/empty_songs.dart';
+
+import 'package:flutter_music/shared/player_state.dart';
 
 void main() => runApp(MyApp());
 MusicFinder audioPlayer;
+const int yoff = 3;
 
 class MyApp extends StatefulWidget {
   @override
@@ -135,52 +142,47 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
     await playLocal(playingSong.uri);
   }
 
+  // 监听ListView滚动事件
+  bool _onNotification(Notification notification) {
+    if (notification is ScrollUpdateNotification && notification.depth == 0) {
+      var d = notification.dragDetails;
+      if (d != null && d.delta != null) {
+        var dy = d.delta.dy;
+        if (dy > yoff) {
+          // 向下滑动
+          bottomViewAnimationCtrl.reverse();
+        } else if (dy < -yoff) {
+          // 向上滑动
+          bottomViewAnimationCtrl.forward();
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     Widget home() {
       if (!_isLoading) {
         return new Scaffold(
-          appBar: AppBar(
-            title: Text('Music App'),
-          ),
+          appBar: AppBar(title: Text('Music App')),
           body: _songs.isEmpty
-              ? Center(
-                  child: Text(
-                    '没有找到本地音乐 >_<',
-                    style: TextStyle(fontSize: 24),
-                  ),
-                )
+              ? EmptySongs()
               : Stack(
                   children: <Widget>[
                     NotificationListener(
-                      onNotification: (notification) {
-                        if (notification is ScrollUpdateNotification &&
-                            notification.depth == 0) {
-                          var d = notification.dragDetails;
-                          if (d != null && d.delta != null) {
-                            int yoff = 3;
-                            var dy = d.delta.dy;
-                            if (dy > yoff) {
-                              // 向下滑动
-                              bottomViewAnimationCtrl.reverse();
-                            } else if (dy < -yoff) {
-                              // 向上滑动
-                              bottomViewAnimationCtrl.forward();
-                            }
-                          }
-                        }
-                      },
+                      onNotification: _onNotification,
                       child: ListView.builder(
                         itemCount: _songs.length,
                         itemBuilder: (context, int index) {
                           Song tapSong = _songs[index];
                           return new ListTile(
-                            leading: fileImage(
+                            leading: SongTitle(
                               tapSong.albumArt == null
                                   ? Text(tapSong.title[0])
                                   : tapSong.albumArt,
                             ),
-                            title: Text(tapSong.title),
+                            subtitle: OverflowText(tapSong.artist),
+                            title: OverflowText(tapSong.title),
                             onTap: () async {
                               currentSongIndex = index;
 
@@ -222,124 +224,25 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                         },
                       ),
                     ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      left: 0,
-                      child: playingSong != null
-                          ? SlideTransition(
-                              position: bottomViewAnimation,
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                ),
-                                child: ListTile(
-                                  dense: true, // 稍微小点
-                                  leading: fileImage(
-                                    playingSong.albumArt == null
-                                        ? Text(playingSong.title[0])
-                                        : playingSong.albumArt,
-                                  ),
-                                  title: Text(
-                                    playingSong.title,
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                  subtitle: Text(
-                                    playingSong.album,
-                                    overflow: TextOverflow.ellipsis,
-                                    maxLines: 1,
-                                  ),
-                                  trailing: IconButton(
-                                    icon: Icon(
-                                      playerState != PlayerState.playing
-                                          ? Icons.play_arrow
-                                          : Icons.pause,
-                                      color: Theme.of(context).primaryColor,
-                                    ),
-                                    onPressed: () async {
-                                      if (playerState == PlayerState.playing) {
-                                        await pause();
-                                      } else {
-                                        await playLocal(playingSong.uri);
-                                      }
-                                    },
-                                  ),
-                                ),
-                              ),
-                            )
-                          : Container(),
+                    PlayingSongView(
+                      playingSong: playingSong,
+                      position: bottomViewAnimation,
+                      playerState: playerState,
+                      pause: pause,
+                      playLocal: playLocal,
                     ),
                   ],
                 ),
         );
       } else {
-        return Scaffold(
-          body: Center(
-            child: Text('loading...'),
-          ),
+        return PageLoading(
+          body: Text('加载中...'),
         );
       }
     }
 
-    var show = true;
     return new MaterialApp(
       home: home(),
-      // home: Scaffold(
-      //   body: ListView(
-      //     children: <Widget>[
-      //       FlatButton(
-      //         onPressed: () {
-      //           show = !show;
-      //           if (show) {
-      //             controller.reverse();
-      //           } else {
-      //             controller.forward();
-      //           }
-      //         },
-      //         child: Text('click'),
-      //       ),
-      //       SlideTransition(
-      //         position: Tween<Offset>(
-      //           begin: Offset(0, 1),
-      //           end: Offset(0, 2),
-      //         ).animate(controller),
-      //         child: Container(
-      //           height: 200,
-      //           decoration: BoxDecoration(
-      //             color: Colors.green,
-      //           ),
-      //         ),
-      //       ),
-      //     ],
-      //   ),
-      // ),
     );
   }
-}
-
-// 音乐播放状态
-enum PlayerState {
-  playing,
-  paused,
-  stopped,
-}
-
-// 返回一个本地的image
-fileImage(
-  path, {
-  BoxFit fit = BoxFit.cover,
-  FilterQuality filterQuality: FilterQuality.low,
-}) {
-  return CircleAvatar(
-    child: path is Widget
-        ? path
-        : new Image.file(
-            new File.fromUri(
-              Uri.parse(path),
-            ),
-            fit: fit,
-            filterQuality: filterQuality,
-          ),
-  );
 }
