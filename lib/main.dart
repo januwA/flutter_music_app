@@ -6,11 +6,11 @@ import 'package:flutter_music/shared/widgets/page_loading.dart';
 import 'package:flutter_music/shared/widgets/playing_song.dart';
 import 'package:flutter_music/shared/widgets/overflow_text.dart';
 import 'package:flutter_music/shared/widgets/empty_songs.dart';
+import 'package:flutter_music/shared/widgets/song_slider.dart';
 
 import 'package:flutter_music/shared/player_state.dart';
 
 void main() => runApp(MyApp());
-MusicFinder audioPlayer;
 const int yoff = 3;
 
 class MyApp extends StatefulWidget {
@@ -19,6 +19,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
+  MusicFinder audioPlayer;
   List<Song> _songs = <Song>[]; // 本地音乐列表
   PlayerState playerState; // 播放状态
   Song playingSong; // 正在播放的音乐
@@ -28,21 +29,17 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
   Duration position; // 当前播放位置
   Animation<Offset> bottomViewAnimation;
   AnimationController bottomViewAnimationCtrl;
+  bool isThemeDataDark = false;
+
+  bool get isPlaying => playerState == PlayerState.playing;
+  bool get isPaused => playerState == PlayerState.paused;
+  int get songsLen => _songs != null ? _songs.length : 0;
 
   // 下一首歌
   Song get nextSong {
     currentSongIndex++;
     playingSong = _songs[currentSongIndex];
-    Song ns = _songs[currentSongIndex % _songs.length];
-    return ns;
-  }
-
-  int get songsLen {
-    if (_songs != null) {
-      return _songs.length;
-    } else {
-      return 0;
-    }
+    return _songs[currentSongIndex % songsLen];
   }
 
   @override
@@ -55,6 +52,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
   @override
   void dispose() {
     bottomViewAnimationCtrl.dispose();
+    audioPlayer.stop();
     super.dispose();
   }
 
@@ -77,9 +75,9 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
       });
     });
 
+    // listen 播放位置变化
     audioPlayer.setPositionHandler((Duration p) {
       setState(() {
-        // 位置
         position = p;
       });
     });
@@ -89,6 +87,14 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
       onComplete();
       setState(() {
         position = duration;
+      });
+    });
+
+    audioPlayer.setErrorHandler((msg) {
+      setState(() {
+        playerState = PlayerState.stopped;
+        duration = new Duration(seconds: 0);
+        position = new Duration(seconds: 0);
       });
     });
   }
@@ -146,18 +152,28 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
     await playLocal(playingSong.uri);
   }
 
+  void _hide() {
+    bottomViewAnimationCtrl.forward();
+  }
+
+  void _show() {
+    bottomViewAnimationCtrl.reverse();
+  }
+
   // 监听ListView滚动事件
   bool _onNotification(Notification notification) {
-    if (notification is ScrollUpdateNotification && notification.depth == 0) {
+    if (notification is ScrollUpdateNotification &&
+        notification.depth == 0 &&
+        playingSong != null) {
       var d = notification.dragDetails;
       if (d != null && d.delta != null) {
         var dy = d.delta.dy;
         if (dy > yoff) {
-          // 向下滑动
-          bottomViewAnimationCtrl.reverse();
+          // 手指向下滑动
+          _show();
         } else if (dy < -yoff) {
-          // 向上滑动
-          bottomViewAnimationCtrl.forward();
+          // 手指向上滑动
+          _hide();
         }
       }
     }
@@ -169,7 +185,20 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
       if (!_isLoading) {
         return new Scaffold(
           appBar: AppBar(
-              title: Text('Music App [${songsLen}/${currentSongIndex + 1}]')),
+            title: Text('Music App [$songsLen/${currentSongIndex + 1}]'),
+            actions: <Widget>[
+              Switch(
+                activeColor: Theme.of(context).primaryColorDark,
+                activeTrackColor: Theme.of(context).primaryColorLight,
+                value: isThemeDataDark,
+                onChanged: (bool v) {
+                  setState(() {
+                    isThemeDataDark = v;
+                  });
+                },
+              ),
+            ],
+          ),
           body: _songs.isEmpty
               ? EmptySongs()
               : Stack(
@@ -177,17 +206,13 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                     NotificationListener(
                       onNotification: _onNotification,
                       child: ListView.builder(
-                        itemCount: _songs.length,
+                        itemCount: songsLen,
                         itemBuilder: (context, int index) {
                           Song tapSong = _songs[index];
                           return new ListTile(
-                            leading: SongTitle(
-                              tapSong.albumArt == null
-                                  ? Text(tapSong.title[0])
-                                  : tapSong.albumArt,
-                            ),
-                            subtitle: OverflowText(tapSong.artist),
+                            leading: SongTitle(tapSong),
                             title: OverflowText(tapSong.title),
+                            subtitle: OverflowText(tapSong.album),
                             onTap: () async {
                               currentSongIndex = index;
 
@@ -200,7 +225,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                               // print(s.title);//Awake
                               // print(s.uri);// /storage/emulated/0/netease/cloudmusic/Music/岩崎琢 - Awake.mp3
 
-                              if (playerState == PlayerState.playing) {
+                              if (isPlaying) {
                                 // 暂停
                                 print('暂停');
                                 // 在列表上点击你应该使用"stop()"而不是"pause()",因为stop会让song真正的结束。
@@ -231,12 +256,19 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                     ),
                     PlayingSongView(
                       playingSong: playingSong,
-                      position: bottomViewAnimation,
                       playerState: playerState,
+                      currentTime: position,
+                      position: bottomViewAnimation,
                       pause: pause,
                       playLocal: playLocal,
-                      currentTime:
-                          position == null ? 0 : position.inMilliseconds,
+                      slider: SongSlider(
+                        value: position,
+                        max: duration,
+                        onChanged: (v) {},
+                        onChangeEnd: (double v) {
+                          audioPlayer.seek(v);
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -249,6 +281,13 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
     }
 
     return new MaterialApp(
+      theme: isThemeDataDark ? ThemeData.dark() : ThemeData.light(),
+      // theme: ThemeData(
+      //   primaryColor: Colors.pink,
+      //   primaryColorDark: Colors.pink[900],
+      //   primaryColorLight: Colors.pinkAccent.shade100,
+      //   accentColor: Colors.blue,
+      // ),
       home: home(),
     );
   }

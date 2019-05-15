@@ -1,13 +1,14 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flute_music_player/flute_music_player.dart';
 
 class SongTitle extends StatelessWidget {
-  final path;
+  final Song song;
   final BoxFit fit;
   final double borderRadius;
 
   SongTitle(
-    this.path, {
+    this.song, {
     Key key,
     this.fit = BoxFit.fill,
     this.borderRadius = 4.0,
@@ -16,13 +17,13 @@ class SongTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return CircleAvatar(
-      child: path is Widget
-          ? path
+      child: song.albumArt == null
+          ? Text(song.title[0])
           : ClipRRect(
               borderRadius: BorderRadius.circular(borderRadius),
               child: new Image.file(
                 new File.fromUri(
-                  Uri.parse(path),
+                  Uri.parse(song.albumArt),
                 ),
                 fit: fit,
               ),
