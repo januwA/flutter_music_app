@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/animation.dart';
 import 'package:flute_music_player/flute_music_player.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:flutter_music/shared/widgets/song_title.dart';
 import 'package:flutter_music/shared/widgets/page_loading.dart';
 import 'package:flutter_music/shared/widgets/playing_song.dart';
@@ -19,6 +21,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
+  SharedPreferences prefs;
   MusicFinder audioPlayer;
   List<Song> _songs = <Song>[]; // 本地音乐列表
   PlayerState playerState; // 播放状态
@@ -29,7 +32,8 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
   Duration position; // 当前播放位置
   Animation<Offset> bottomViewAnimation;
   AnimationController bottomViewAnimationCtrl;
-  bool isThemeDataDark = false;
+  bool isThemeDataDark = false; // 是否为黑色主题
+  bool isGridLayout = false; // 是否为grid布局
 
   bool get isPlaying => playerState == PlayerState.playing;
   bool get isPaused => playerState == PlayerState.paused;
@@ -44,9 +48,10 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
 
   @override
   void initState() {
-    super.initState();
+    _initPageConfig();
     _initPlayer();
     _initBottomViewAnimation();
+    super.initState();
   }
 
   @override
@@ -54,6 +59,14 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
     bottomViewAnimationCtrl.dispose();
     audioPlayer.stop();
     super.dispose();
+  }
+
+  Future<void> _initPageConfig() async {
+    prefs = await SharedPreferences.getInstance();
+    setState(() {
+      isThemeDataDark = prefs.getBool('isThemeDataDark') ?? false;
+      isGridLayout = prefs.getBool('isGridLayout') ?? false;
+    });
   }
 
   /**
@@ -179,14 +192,63 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
     }
   }
 
+  _itemTap(int index) {
+    Song tapSong = _songs[index];
+    return () async {
+      currentSongIndex = index;
+
+      // print(s.id); // 23117
+      // print(s.album); // ジョジョの奇妙な冒険 O.S.T Battle Tendency [Leicht Verwendbar]
+      // print(s.albumArt); // /storage/emulated/0/Android/data/com.android.providers.media/albumthumbs/1556812126330
+      // print(s.albumId); // 7
+      // print(s.artist);//岩崎琢
+      // print(s.duration);//201638
+      // print(s.title);//Awake
+      // print(s.uri);// /storage/emulated/0/netease/cloudmusic/Music/岩崎琢 - Awake.mp3
+
+      if (isPlaying) {
+        // 暂停
+        // 在列表上点击你应该使用"stop()"而不是"pause()",因为stop会让song真正的结束。
+        if (tapSong == playingSong) {
+          await pause();
+        } else {
+          _switchMusic(tapSong);
+        }
+      } else {
+        // 播放
+        if (playingSong == null) {
+          // 第一次进入直接播放点击歌曲
+          playingSong = tapSong;
+          await playLocal(playingSong.uri);
+        } else if (tapSong != playingSong) {
+          // 在列表中点击了其他歌曲
+          _switchMusic(tapSong);
+        } else if (tapSong == playingSong) {
+          // 点击了同一首歌曲
+          await playLocal(playingSong.uri);
+        }
+      }
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     Widget home() {
       if (!_isLoading) {
         return new Scaffold(
           appBar: AppBar(
-            title: Text('Music App [$songsLen/${currentSongIndex + 1}]'),
+            title: Text('Music [${currentSongIndex + 1}/$songsLen]'),
             actions: <Widget>[
+              IconButton(
+                onPressed: () {
+                  prefs.setBool('isGridLayout', !isGridLayout);
+                  setState(() {
+                    isGridLayout = !isGridLayout;
+                  });
+                },
+                icon: Icon(isGridLayout ? Icons.view_list : Icons.grid_on),
+                color: Theme.of(context).primaryColorLight,
+              ),
               Switch(
                 activeColor: Theme.of(context).primaryColorDark,
                 activeTrackColor: Theme.of(context).primaryColorLight,
@@ -195,6 +257,7 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                   setState(() {
                     isThemeDataDark = v;
                   });
+                  prefs.setBool('isThemeDataDark', v);
                 },
               ),
             ],
@@ -205,54 +268,54 @@ class _MyAppState extends State<MyApp> with SingleTickerProviderStateMixin {
                   children: <Widget>[
                     NotificationListener(
                       onNotification: _onNotification,
-                      child: ListView.builder(
-                        itemCount: songsLen,
-                        itemBuilder: (context, int index) {
-                          Song tapSong = _songs[index];
-                          return new ListTile(
-                            leading: SongTitle(tapSong),
-                            title: OverflowText(tapSong.title),
-                            subtitle: OverflowText(tapSong.album),
-                            onTap: () async {
-                              currentSongIndex = index;
-
-                              // print(s.id); // 23117
-                              // print(s.album); // ジョジョの奇妙な冒険 O.S.T Battle Tendency [Leicht Verwendbar]
-                              // print(s.albumArt); // /storage/emulated/0/Android/data/com.android.providers.media/albumthumbs/1556812126330
-                              // print(s.albumId); // 7
-                              // print(s.artist);//岩崎琢
-                              // print(s.duration);//201638
-                              // print(s.title);//Awake
-                              // print(s.uri);// /storage/emulated/0/netease/cloudmusic/Music/岩崎琢 - Awake.mp3
-
-                              if (isPlaying) {
-                                // 暂停
-                                print('暂停');
-                                // 在列表上点击你应该使用"stop()"而不是"pause()",因为stop会让song真正的结束。
-                                if (tapSong == playingSong) {
-                                  await pause();
-                                } else {
-                                  _switchMusic(tapSong);
-                                }
-                              } else {
-                                // 播放
-                                print('播放');
-                                if (playingSong == null) {
-                                  // 第一次进入直接播放点击歌曲
-                                  playingSong = tapSong;
-                                  await playLocal(playingSong.uri);
-                                } else if (tapSong != playingSong) {
-                                  // 在列表中点击了其他歌曲
-                                  _switchMusic(tapSong);
-                                } else if (tapSong == playingSong) {
-                                  // 点击了同一首歌曲
-                                  await playLocal(playingSong.uri);
-                                }
-                              }
-                            },
-                          );
-                        },
-                      ),
+                      child: isGridLayout
+                          ? GridView.count(
+                              crossAxisSpacing: 10.0,
+                              crossAxisCount: 2,
+                              children: _songs.map((Song song) {
+                                return Card(
+                                  shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8.0)),
+                                  child: InkWell(
+                                    onTap: _itemTap(_songs.indexOf(song)),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.start,
+                                      mainAxisSize: MainAxisSize.max,
+                                      children: <Widget>[
+                                        SongTitle.grid(
+                                          song,
+                                          fit: BoxFit.cover,
+                                          width: double.infinity,
+                                          height: 95,
+                                        ),
+                                        ListTile(
+                                          title: OverflowText(song.title),
+                                          subtitle: OverflowText(song.album),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                );
+                              }).toList(),
+                            )
+                          : ListView.separated(
+                              separatorBuilder:
+                                  (BuildContext context, int index) => Divider(
+                                        indent: 8.0,
+                                      ),
+                              itemCount: songsLen,
+                              itemBuilder: (context, int index) {
+                                Song tapSong = _songs[index];
+                                return new ListTile(
+                                  dense: true,
+                                  leading: SongTitle(tapSong),
+                                  title: OverflowText(tapSong.title),
+                                  subtitle: OverflowText(tapSong.album),
+                                  onTap: _itemTap(index),
+                                );
+                              },
+                            ),
                     ),
                     PlayingSongView(
                       playingSong: playingSong,
