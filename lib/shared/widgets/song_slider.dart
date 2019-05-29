@@ -11,10 +11,10 @@ class SongSlider extends StatelessWidget {
     this.onChangeEnd,
   }) : super(key: key);
 
-  Duration value;
-  Duration max;
-  Change onChanged;
-  Change onChangeEnd;
+  final Duration value;
+  final Duration max;
+  final Change onChanged;
+  final Change onChangeEnd;
 
   double get _valueSeconds => value == null ? 0 : value.inSeconds.toDouble();
   double get _maxSeconds => value == null ? 0 : max.inSeconds.toDouble();
