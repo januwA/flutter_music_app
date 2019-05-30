@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:rxdart/rxdart.dart';
 import 'package:flute_music_player/flute_music_player.dart';
-
 import 'package:flutter_music/shared/player_state.dart';
 
 class SongService {
@@ -24,10 +23,10 @@ class SongService {
   MusicFinder audioPlayer;
 
   /// 总时长
-  Duration duration;
+  Duration duration = Duration(seconds: 0);
 
   /// 当前播放位置
-  Duration position;
+  Duration position = Duration(seconds: 0);
 
   bool get isPlaying => playerState == PlayerState.playing;
   int get songLength => _songs.length;
