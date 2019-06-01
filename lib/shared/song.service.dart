@@ -4,11 +4,11 @@ import 'package:flute_music_player/flute_music_player.dart';
 import 'package:flutter_music/shared/player_state.dart';
 
 class SongService {
-  Stream<List<Song>> get songs => _songsSubject.stream;
+  Stream<List<Song>> get songs$ => _songsSubject.stream;
   final _songsSubject = BehaviorSubject<List<Song>>();
 
   /// 本地歌曲列表
-  var _songs = List<Song>();
+  List<Song> _songs = List<Song>();
 
   /// 正在播放音乐的index
   int currentIndex = -1;
@@ -168,3 +168,4 @@ class SongService {
     };
   }
 }
+SongService songService = SongService();

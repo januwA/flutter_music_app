@@ -1,24 +1,25 @@
-/// 这个service文件，用来控制整个app的状态，ui控制
-
-
 import 'dart:async';
 import 'package:rxdart/rxdart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+enum AppThemeState {
+  Dark,
+  Light,
+}
+
 class AppConfig {
   AppConfig({
-    this.isDark = false,
+    this.isDark = AppThemeState.Dark,
   });
-  bool isDark;
+  AppThemeState isDark;
 }
 
 class AppService {
-  Stream<AppConfig> get config => _configSubject.stream;
-  final _configSubject = BehaviorSubject<AppConfig>();
-  var _config = AppConfig();
+  Stream<AppConfig> get appConfig$ => _configSubject.stream;
   SharedPreferences _prefs;
-
-  bool get isDark => _config.isDark;
+  var _configSubject = BehaviorSubject<AppConfig>();
+  var _config = AppConfig();
+  bool get isDark => _config.isDark == AppThemeState.Dark;
 
   AppService() {
     _initConfig().then((_) {
@@ -34,15 +35,15 @@ class AppService {
   Future<Null> _initConfig() async {
     _prefs = await SharedPreferences.getInstance();
     bool isDark = _prefs.getBool('isDark') ?? _config.isDark;
-    _config..isDark = isDark;
+    _config..isDark = isDark ? AppThemeState.Dark : AppThemeState.Light;
   }
 
   /// 设置主题
-  ///
-  /// true为dark,false为loght
-  setTheme(bool v) {
-    _prefs.setBool('isDark', v);
-    _config.isDark = v;
+  setTheme(AppThemeState v) {
+    _prefs.setBool('isDark', v == AppThemeState.Dark);
+    _config..isDark = v;
     _configSubject.add(_config);
   }
 }
+
+AppService appService = AppService();
