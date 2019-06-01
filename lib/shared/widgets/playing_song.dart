@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flute_music_player/flute_music_player.dart';
+import 'package:flutter_music/shared/song.service.dart' show PlayerState;
 import 'package:flutter_music/shared/widgets/song_title.dart';
 import 'package:flutter_music/shared/widgets/overflow_text.dart';
-import 'package:flutter_music/shared/player_state.dart';
 
 class PlayingSongView extends StatelessWidget {
   const PlayingSongView({

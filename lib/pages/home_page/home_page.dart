@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/animation.dart';
 
 import 'package:flute_music_player/flute_music_player.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_music/pages/home_page/home.service.dart';
 import 'package:flutter_music/pages/home_page/home_drawer.dart';
 import 'package:flutter_music/pages/home_page/serarch_page.dart';
@@ -79,6 +80,7 @@ class _HomePageState extends State<HomePage>
   /// Grid布局的每个item
   Widget _gridItemSong(Song song, int index) {
     return Card(
+      key: ValueKey(song.id),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
       child: InkWell(
         onTap: songService.itemSongTap(song, index),
@@ -103,7 +105,7 @@ class _HomePageState extends State<HomePage>
   }
 
   Widget _homeGridView(List<Song> songs) {
-    return GridView.count(
+    return SliverGrid.count(
       crossAxisSpacing: 10.0,
       crossAxisCount: 2,
       children: <Widget>[
@@ -113,21 +115,26 @@ class _HomePageState extends State<HomePage>
   }
 
   Widget _homeListView(List<Song> songs) {
-    return ListView.separated(
-      separatorBuilder: (BuildContext context, int index) => Divider(
-            indent: 8.0,
-          ),
-      itemCount: songs.length,
-      itemBuilder: (context, int index) {
-        Song tapSong = songs[index];
-        return new ListTile(
-          dense: true,
-          leading: SongTitle(tapSong),
-          title: OverflowText(tapSong.title),
-          subtitle: OverflowText(tapSong.album),
-          onTap: songService.itemSongTap(tapSong, index),
-        );
-      },
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, int index) {
+          Song tapSong = songs[index];
+          return Column(
+            children: <Widget>[
+              ListTile(
+                key: ValueKey(tapSong.id),
+                dense: true,
+                leading: SongTitle(tapSong),
+                title: OverflowText(tapSong.title),
+                subtitle: OverflowText(tapSong.album),
+                onTap: songService.itemSongTap(tapSong, index),
+              ),
+              index == songs.length - 1 ? Container() : Divider(),
+            ],
+          );
+        },
+        childCount: songs.length,
+      ),
     );
   }
 
@@ -170,46 +177,54 @@ class _HomePageState extends State<HomePage>
         String title =
             'Music [${songService.currentIndex + 1}/${songService.songLength}]';
         return Scaffold(
-          appBar: AppBar(
-            title: Text(title),
-            actions: _appbarActions(),
-          ),
-          drawer: HomeDrawer(),
-          body: songs.isEmpty
-              ? EmptySongs()
-              : Stack(
-                  children: <Widget>[
-                    StreamBuilder<HomeConfig>(
-                      stream: homeService.config$,
-                      builder: (context, rr) {
-                        if (rr.connectionState == ConnectionState.waiting ||
-                            !rr.hasData) {
-                          return Container();
-                        }
-                        return NotificationListener(
-                          onNotification: _onNotification,
-                          child: rr.data.layout == HomeLayoutState.grid
-                              ? _homeGridView(songs)
-                              : _homeListView(songs),
-                        );
-                      },
-                    ),
-                    PlayingSongView(
-                      playingSong: songService.playingSong,
-                      playerState: songService.playerState,
-                      currentTime: songService.position,
-                      position: _animation,
-                      pause: songService.pause,
-                      playLocal: songService.playLocal,
-                      slider: SongSlider(
-                        value: songService.position,
-                        max: songService.duration,
-                        onChangeEnd: songService.seek,
+            drawer: HomeDrawer(),
+            body: Stack(
+              children: <Widget>[
+                NotificationListener(
+                  onNotification: _onNotification,
+                  child: CustomScrollView(
+                    slivers: <Widget>[
+                      SliverAppBar(
+                        title: Text(title),
+                        actions: _appbarActions(),
+                        floating: true,
                       ),
-                    ),
-                  ],
+                      songs.isEmpty
+                          ? SliverToBoxAdapter(
+                              child: EmptySongs(),
+                            )
+                          : StreamBuilder<HomeConfig>(
+                              stream: homeService.config$,
+                              builder: (context, rr) {
+                                if (rr.connectionState ==
+                                        ConnectionState.waiting ||
+                                    !rr.hasData) {
+                                  return SliverToBoxAdapter();
+                                }
+
+                                return rr.data.layout == HomeLayoutState.grid
+                                    ? _homeGridView(songs)
+                                    : _homeListView(songs);
+                              },
+                            ),
+                    ],
+                  ),
                 ),
-        );
+                PlayingSongView(
+                  playingSong: songService.playingSong,
+                  playerState: songService.playerState,
+                  currentTime: songService.position,
+                  position: _animation,
+                  pause: songService.pause,
+                  playLocal: songService.playLocal,
+                  slider: SongSlider(
+                    value: songService.position,
+                    max: songService.duration,
+                    onChangeEnd: songService.seek,
+                  ),
+                ),
+              ],
+            ));
       },
     );
   }

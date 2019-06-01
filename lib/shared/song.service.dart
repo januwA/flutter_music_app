@@ -1,7 +1,13 @@
 import 'dart:async';
 import 'package:rxdart/rxdart.dart';
 import 'package:flute_music_player/flute_music_player.dart';
-import 'package:flutter_music/shared/player_state.dart';
+
+/// 音乐播放状态
+enum PlayerState {
+  playing,
+  paused,
+  stopped,
+}
 
 class SongService {
   Stream<List<Song>> get songs$ => _songsSubject.stream;
@@ -168,4 +174,5 @@ class SongService {
     };
   }
 }
+
 SongService songService = SongService();
