@@ -6,12 +6,11 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_music/pages/home_page/home.service.dart';
 import 'package:flutter_music/pages/home_page/home_drawer.dart';
 import 'package:flutter_music/pages/home_page/serarch_page.dart';
+import 'package:flutter_music/pages/home_page/song_grid.dart';
+import 'package:flutter_music/pages/home_page/song_list.dart';
 import 'package:flutter_music/shared/widgets/empty_songs.dart';
-import 'package:flutter_music/shared/widgets/song_title.dart';
 import 'package:flutter_music/shared/widgets/page_loading.dart';
 import 'package:flutter_music/shared/widgets/playing_song.dart';
-import 'package:flutter_music/shared/widgets/overflow_text.dart';
-import 'package:flutter_music/shared/widgets/song_slider.dart';
 import 'package:flutter_music/shared/song.service.dart';
 
 const int yoff = 3;
@@ -23,37 +22,38 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
-  Animation<Offset> _animation;
-  AnimationController _animationCtrl;
+  Animation<Offset> _position;
+  AnimationController _positionC;
 
   @override
   void initState() {
-    _animationCtrl = new AnimationController(
+    _positionC = new AnimationController(
       duration: const Duration(
-        milliseconds: 200,
+        milliseconds: 300,
       ),
       vsync: this,
     );
-    _animation = Tween<Offset>(
+    _position = Tween<Offset>(
       begin: Offset(0, 0),
       end: Offset(0, 1), // y轴偏移量+height
-    ).animate(_animationCtrl);
+    ).animate(_positionC);
     super.initState();
   }
 
   @override
   void dispose() {
+    _positionC.dispose();
     super.dispose();
   }
 
   /// 隐藏页面底部正在播放歌曲面板
   void _hide() {
-    _animationCtrl.forward();
+    _positionC.forward();
   }
 
   /// 显示页面底部正在播放歌曲面板
   void _show() {
-    _animationCtrl.reverse();
+    _positionC.reverse();
   }
 
   /// 监听ListView滚动事件
@@ -75,67 +75,6 @@ class _HomePageState extends State<HomePage>
       return true;
     }
     return false;
-  }
-
-  /// Grid布局的每个item
-  Widget _gridItemSong(Song song, int index) {
-    return Card(
-      key: ValueKey(song.id),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-      child: InkWell(
-        onTap: songService.itemSongTap(song, index),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          mainAxisSize: MainAxisSize.max,
-          children: <Widget>[
-            SongTitle.grid(
-              song,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: 95,
-            ),
-            ListTile(
-              title: OverflowText(song.title),
-              subtitle: OverflowText(song.album),
-            )
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _homeGridView(List<Song> songs) {
-    return SliverGrid.count(
-      crossAxisSpacing: 10.0,
-      crossAxisCount: 2,
-      children: <Widget>[
-        for (Song song in songs) _gridItemSong(song, songs.indexOf(song)),
-      ],
-    );
-  }
-
-  Widget _homeListView(List<Song> songs) {
-    return SliverList(
-      delegate: SliverChildBuilderDelegate(
-        (context, int index) {
-          Song tapSong = songs[index];
-          return Column(
-            children: <Widget>[
-              ListTile(
-                key: ValueKey(tapSong.id),
-                dense: true,
-                leading: SongTitle(tapSong),
-                title: OverflowText(tapSong.title),
-                subtitle: OverflowText(tapSong.album),
-                onTap: songService.itemSongTap(tapSong, index),
-              ),
-              index == songs.length - 1 ? Container() : Divider(),
-            ],
-          );
-        },
-        childCount: songs.length,
-      ),
-    );
   }
 
   /// 返回头部的actions
@@ -203,24 +142,20 @@ class _HomePageState extends State<HomePage>
                                 }
 
                                 return rr.data.layout == HomeLayoutState.grid
-                                    ? _homeGridView(songs)
-                                    : _homeListView(songs);
+                                    ? SongGrid(songs)
+                                    : SongList(songs);
                               },
                             ),
                     ],
                   ),
                 ),
-                PlayingSongView(
-                  playingSong: songService.playingSong,
-                  playerState: songService.playerState,
-                  currentTime: songService.position,
-                  position: _animation,
-                  pause: songService.pause,
-                  playLocal: songService.playLocal,
-                  slider: SongSlider(
-                    value: songService.position,
-                    max: songService.duration,
-                    onChangeEnd: songService.seek,
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  left: 0,
+                  child: SlideTransition(
+                    position: _position,
+                    child: PlayingSongView(),
                   ),
                 ),
               ],

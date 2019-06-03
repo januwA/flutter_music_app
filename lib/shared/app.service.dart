@@ -34,7 +34,7 @@ class AppService {
   /// 初始化config
   Future<Null> _initConfig() async {
     _prefs = await SharedPreferences.getInstance();
-    bool isDark = _prefs.getBool('isDark') ?? _config.isDark;
+    bool isDark = _prefs.getBool('isDark') ?? false;
     _config..isDark = isDark ? AppThemeState.Dark : AppThemeState.Light;
   }
 
