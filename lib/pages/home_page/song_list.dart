@@ -13,18 +13,12 @@ class SongList extends StatelessWidget {
       delegate: SliverChildBuilderDelegate(
         (context, int index) {
           Song tapSong = songs[index];
-          return Column(
-            children: <Widget>[
-              ListTile(
-                key: ValueKey(tapSong.id),
-                dense: true,
-                leading: SongTitle(tapSong),
-                title: OverflowText(tapSong.title),
-                subtitle: OverflowText(tapSong.album),
-                onTap: songService.itemSongTap(tapSong, index),
-              ),
-              index == songs.length - 1 ? Container() : Divider(),
-            ],
+          return ListTile(
+            key: ValueKey(tapSong.id),
+            leading: SongTitle(tapSong),
+            title: OverflowText(tapSong.title),
+            subtitle: OverflowText(tapSong.album),
+            onTap: songService.itemSongTap(tapSong, index),
           );
         },
         childCount: songs.length,

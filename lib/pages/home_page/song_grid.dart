@@ -9,12 +9,15 @@ class SongGrid extends StatelessWidget {
   final List<Song> songs;
   @override
   Widget build(BuildContext context) {
-    return SliverGrid.count(
-      crossAxisSpacing: 10.0,
-      crossAxisCount: 2,
-      children: <Widget>[
-        for (Song song in songs) _SongGridItem(song, songs.indexOf(song)),
-      ],
+    return SliverPadding(
+      padding: EdgeInsets.symmetric(horizontal: 8.0),
+      sliver: SliverGrid.count(
+        crossAxisSpacing: 4.0,
+        crossAxisCount: 2,
+        children: <Widget>[
+          for (Song song in songs) _SongGridItem(song, songs.indexOf(song)),
+        ],
+      ),
     );
   }
 }
@@ -27,18 +30,19 @@ class _SongGridItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       key: ValueKey(song.id),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
       child: InkWell(
         onTap: songService.itemSongTap(song, index),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           mainAxisSize: MainAxisSize.max,
           children: <Widget>[
-            SongTitle.grid(
-              song,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: 95,
+            Expanded(
+              child: SongTitle.grid(
+                song,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: 95,
+              ),
             ),
             ListTile(
               title: OverflowText(song.title),
