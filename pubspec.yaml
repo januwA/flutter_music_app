@@ -26,12 +26,15 @@ dependencies:
   flute_music_player:
   shared_preferences: ^0.5.2
   cached_network_image: ^0.8.0
-  rxdart:
   transparent_image:
+  mobx:
+  flutter_mobx:
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  build_runner:
+  mobx_codegen:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec

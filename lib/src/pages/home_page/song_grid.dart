@@ -1,12 +1,10 @@
 import 'package:flute_music_player/flute_music_player.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_music/shared/song.service.dart';
-import 'package:flutter_music/shared/widgets/overflow_text.dart';
-import 'package:flutter_music/shared/widgets/song_title.dart';
+import 'package:flutter_music/src/shared/stores/song_store.dart';
+import 'package:flutter_music/src/shared/widgets/overflow_text.dart';
+import 'package:flutter_music/src/shared/widgets/song_title.dart';
 
 class SongGrid extends StatelessWidget {
-  SongGrid(this.songs);
-  final List<Song> songs;
   @override
   Widget build(BuildContext context) {
     return SliverPadding(
@@ -14,8 +12,9 @@ class SongGrid extends StatelessWidget {
       sliver: SliverGrid.count(
         crossAxisSpacing: 4.0,
         crossAxisCount: 2,
+        childAspectRatio: 0.7,
         children: <Widget>[
-          for (Song song in songs) _SongGridItem(song, songs.indexOf(song)),
+          for (Song song in songStore.songs) _SongGridItem(song),
         ],
       ),
     );
@@ -23,15 +22,14 @@ class SongGrid extends StatelessWidget {
 }
 
 class _SongGridItem extends StatelessWidget {
-  _SongGridItem(this.song, this.index);
+  _SongGridItem(this.song);
   final Song song;
-  final int index;
   @override
   Widget build(BuildContext context) {
     return Card(
       key: ValueKey(song.id),
       child: InkWell(
-        onTap: songService.itemSongTap(song, index),
+        onTap: () => songStore.itemSongTap(song),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           mainAxisSize: MainAxisSize.max,

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flute_music_player/flute_music_player.dart';
+import 'package:flutter_music/src/shared/stores/global_store.dart';
 
 class SongTitle extends StatelessWidget {
   final Song song;
@@ -53,9 +54,7 @@ class SongTitle extends StatelessWidget {
                 width: width,
               )
             : Image.file(
-                new File.fromUri(
-                  Uri.parse(song.albumArt),
-                ),
+                File(song.albumArt),
                 fit: fit,
                 height: height,
                 width: width,
@@ -63,14 +62,14 @@ class SongTitle extends StatelessWidget {
       );
     }
     return CircleAvatar(
+      backgroundColor:
+          globalStore.isDark ? Colors.white : Theme.of(context).primaryColor,
       child: song.albumArt == null
           ? Text(song.title[0])
           : ClipRRect(
               borderRadius: imageBorderRadius,
-              child: new Image.file(
-                new File.fromUri(
-                  Uri.parse(song.albumArt),
-                ),
+              child: Image.file(
+                File(song.albumArt),
                 fit: fit,
                 height: height,
                 width: width,
