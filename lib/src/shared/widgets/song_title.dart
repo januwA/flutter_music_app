@@ -2,7 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flute_music_player/flute_music_player.dart';
-import 'package:flutter_music/src/shared/stores/global_store.dart';
+import 'package:flutter_music/src/store/main/main.store.dart';
 
 class SongTitle extends StatelessWidget {
   final Song song;
@@ -47,7 +47,7 @@ class SongTitle extends StatelessWidget {
         child: song.albumArt == null
             ? CachedNetworkImage(
                 imageUrl: "https://s2.ax1x.com/2019/05/22/V9fCKH.jpg",
-                placeholder: (context, url) => CircularProgressIndicator(),
+                placeholder: (context, url) => Center(child: CircularProgressIndicator()),
                 errorWidget: (context, url, error) => new Icon(Icons.error),
                 fit: fit,
                 height: height,
@@ -62,8 +62,9 @@ class SongTitle extends StatelessWidget {
       );
     }
     return CircleAvatar(
-      backgroundColor:
-          globalStore.isDark ? Colors.white : Theme.of(context).primaryColor,
+      backgroundColor: mainStore.themeService.isDark
+          ? Colors.white
+          : Theme.of(context).primaryColor,
       child: song.albumArt == null
           ? Text(song.title[0])
           : ClipRRect(

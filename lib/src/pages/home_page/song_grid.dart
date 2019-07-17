@@ -1,8 +1,8 @@
 import 'package:flute_music_player/flute_music_player.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_music/src/shared/stores/song_store.dart';
 import 'package:flutter_music/src/shared/widgets/overflow_text.dart';
 import 'package:flutter_music/src/shared/widgets/song_title.dart';
+import 'package:flutter_music/src/store/main/main.store.dart';
 
 class SongGrid extends StatelessWidget {
   @override
@@ -14,7 +14,7 @@ class SongGrid extends StatelessWidget {
         crossAxisCount: 2,
         childAspectRatio: 0.7,
         children: <Widget>[
-          for (Song song in songStore.songs) _SongGridItem(song),
+          for (Song song in mainStore.songService.songs) _SongGridItem(song),
         ],
       ),
     );
@@ -27,9 +27,8 @@ class _SongGridItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      key: ValueKey(song.id),
       child: InkWell(
-        onTap: () => songStore.itemSongTap(song),
+        onTap: () => mainStore.songService.itemSongTap(song),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           mainAxisSize: MainAxisSize.max,

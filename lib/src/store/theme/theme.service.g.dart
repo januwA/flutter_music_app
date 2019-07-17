@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'global_store.dart';
+part of 'theme.service.dart';
 
 // **************************************************************************
 // StoreGenerator
@@ -8,8 +8,14 @@ part of 'global_store.dart';
 
 // ignore_for_file: non_constant_identifier_names, unnecessary_lambdas, prefer_expression_function_bodies, lines_longer_than_80_chars
 
-mixin _$GlobalStore on _GlobalStore, Store {
-  final _$isDarkAtom = Atom(name: '_GlobalStore.isDark');
+mixin _$ThemeService on _ThemeService, Store {
+  Computed<ThemeData> _$themeComputed;
+
+  @override
+  ThemeData get theme =>
+      (_$themeComputed ??= Computed<ThemeData>(() => super.theme)).value;
+
+  final _$isDarkAtom = Atom(name: '_ThemeService.isDark');
 
   @override
   bool get isDark {
@@ -24,7 +30,7 @@ mixin _$GlobalStore on _GlobalStore, Store {
     _$isDarkAtom.reportChanged();
   }
 
-  final _$_prefsAtom = Atom(name: '_GlobalStore._prefs');
+  final _$_prefsAtom = Atom(name: '_ThemeService._prefs');
 
   @override
   SharedPreferences get _prefs {
@@ -46,15 +52,16 @@ mixin _$GlobalStore on _GlobalStore, Store {
     return _$_initAsyncAction.run(() => super._init());
   }
 
-  final _$_GlobalStoreActionController = ActionController(name: '_GlobalStore');
+  final _$_ThemeServiceActionController =
+      ActionController(name: '_ThemeService');
 
   @override
-  dynamic setTheme(bool v) {
-    final _$actionInfo = _$_GlobalStoreActionController.startAction();
+  void setTheme(bool v) {
+    final _$actionInfo = _$_ThemeServiceActionController.startAction();
     try {
       return super.setTheme(v);
     } finally {
-      _$_GlobalStoreActionController.endAction(_$actionInfo);
+      _$_ThemeServiceActionController.endAction(_$actionInfo);
     }
   }
 }

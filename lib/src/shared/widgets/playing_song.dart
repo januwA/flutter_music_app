@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
-import 'package:flutter_music/src/shared/stores/global_store.dart';
-import 'package:flutter_music/src/shared/stores/song_store.dart';
 import 'package:flutter_music/src/shared/widgets/overflow_text.dart';
 import 'package:flutter_music/src/shared/widgets/song_title.dart';
+import 'package:flutter_music/src/store/main/main.store.dart';
+import 'package:flutter_music/src/store/song/song.service.dart';
 
 class PlayingSongView extends StatelessWidget {
-  int get currentTimeMilliseconds =>
-      songStore.position == null ? 0 : songStore.position.inMilliseconds;
+  int get currentTimeMilliseconds => mainStore.songService.position == null
+      ? 0
+      : mainStore.songService.position.inMilliseconds;
 
   /// 把一个值从一个范围映射到另一个范围
   double _ourMap(num v, num start1, num stop1, num start2, num stop2) {
@@ -17,61 +18,52 @@ class PlayingSongView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Observer(
-      builder: (_) => songStore.playingSong == null
+      builder: (_) => mainStore.songService.playingSong == null
           ? Container()
-          : Container(
-              decoration: BoxDecoration(
-                color: globalStore.isDark
-                    ? Theme.of(context).primaryColor
-                    : Colors.white,
-              ),
+          : Card(
               child: Column(
                 children: <Widget>[
                   _SongSlider(),
                   ListTile(
                     dense: true, // 稍微小点
                     leading: SongTitle(
-                      songStore.playingSong,
+                      mainStore.songService.playingSong,
                       borderRadius: 30.0,
                     ),
                     title: Tooltip(
-                      message: songStore.playingSong.title,
-                      child: OverflowText(songStore.playingSong.title),
+                      message: mainStore.songService.playingSong.title,
+                      child:
+                          OverflowText(mainStore.songService.playingSong.title),
                     ),
                     subtitle: Tooltip(
-                      message: songStore.playingSong.album,
-                      child: OverflowText(songStore.playingSong.artist),
+                      message: mainStore.songService.playingSong.album,
+                      child: OverflowText(
+                          mainStore.songService.playingSong.artist),
                     ),
                     trailing: Stack(
                       alignment: AlignmentDirectional.center,
                       children: <Widget>[
                         CircularProgressIndicator(
                           backgroundColor: Colors.grey[300],
-                          valueColor: AlwaysStoppedAnimation(
-                            globalStore.isDark
-                                ? Colors.white
-                                : Theme.of(context).primaryColor,
-                          ),
                           strokeWidth: 2.0,
                           value: _ourMap(currentTimeMilliseconds, 0,
-                              songStore.playingSong.duration, 0, 1),
-                          // value: 0.3,
+                              mainStore.songService.playingSong.duration, 0, 1),
                         ),
                         IconButton(
+                          color: Theme.of(context).accentColor,
                           icon: Icon(
-                            songStore.playerState != PlayerState.playing
+                            mainStore.songService.playerState !=
+                                    PlayerState.playing
                                 ? Icons.play_arrow
                                 : Icons.pause,
-                            color: globalStore.isDark
-                                ? Colors.white
-                                : Theme.of(context).primaryColor,
                           ),
                           onPressed: () async {
-                            if (songStore.playerState == PlayerState.playing) {
-                              await songStore.pause();
+                            if (mainStore.songService.playerState ==
+                                PlayerState.playing) {
+                              await mainStore.songService.pause();
                             } else {
-                              await songStore
-                                  .playLocal(songStore.playingSong.uri);
+                              await mainStore.songService.playLocal(
+                                  mainStore.songService.playingSong.uri);
                             }
                           },
                         )
@@ -86,22 +78,32 @@ class PlayingSongView extends StatelessWidget {
 }
 
 class _SongSlider extends StatelessWidget {
-  double get _valueSeconds =>
-      songStore.position == null ? 0 : songStore.position.inSeconds.toDouble();
-  double get _maxSeconds =>
-      songStore.duration == null ? 0 : songStore.duration.inSeconds.toDouble();
+  double get _valueSeconds => mainStore.songService.position == null
+      ? 0
+      : mainStore.songService.position.inSeconds.toDouble();
+  double get _maxSeconds => mainStore.songService.duration == null
+      ? 1
+      : mainStore.songService.duration.inSeconds.toDouble();
 
   String get durationText {
-    if (songStore.duration == null) return '';
-    var r = songStore.duration.toString().split('.').first.split(':')
-      ..removeAt(0);
+    if (mainStore.songService.duration == null) return '';
+    var r = mainStore.songService.duration
+        .toString()
+        .split('.')
+        .first
+        .split(':')
+          ..removeAt(0);
     return r.join(':');
   }
 
   String get positionText {
-    if (songStore.position == null) return '';
-    var r = songStore.position.toString().split('.').first.split(':')
-      ..removeAt(0);
+    if (mainStore.songService.position == null) return '';
+    var r = mainStore.songService.position
+        .toString()
+        .split('.')
+        .first
+        .split(':')
+          ..removeAt(0);
     return r.join(':');
   }
 
@@ -114,15 +116,13 @@ class _SongSlider extends StatelessWidget {
           Text(positionText),
           Expanded(
             child: Slider(
-              activeColor: globalStore.isDark
-                  ? Colors.white
-                  : Theme.of(context).primaryColor,
-              inactiveColor: Colors.grey[300],
+              activeColor: Theme.of(context).accentColor,
+              inactiveColor: Theme.of(context).accentColor.withAlpha(100),
               min: 0,
               max: _maxSeconds,
               value: _valueSeconds,
               onChanged: (_) {},
-              onChangeEnd: songStore.seek,
+              onChangeEnd: mainStore.songService.seek,
             ),
           ),
           Text(durationText),

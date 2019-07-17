@@ -3,14 +3,13 @@ import 'package:flutter/animation.dart';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
-import 'package:flutter_music/src/pages/home_page/home_store.dart';
+import 'package:flutter_music/src/pages/home_page/home.store.dart';
 import 'package:flutter_music/src/pages/home_page/serarch_page.dart';
 import 'package:flutter_music/src/pages/home_page/song_grid.dart';
 import 'package:flutter_music/src/pages/home_page/song_list.dart';
-import 'package:flutter_music/src/shared/stores/global_store.dart';
-import 'package:flutter_music/src/shared/stores/song_store.dart';
 import 'package:flutter_music/src/shared/widgets/empty_songs.dart';
 import 'package:flutter_music/src/shared/widgets/playing_song.dart';
+import 'package:flutter_music/src/store/main/main.store.dart';
 
 const int yoff = 3;
 
@@ -58,7 +57,7 @@ class _HomePageState extends State<HomePage>
   bool _onNotification(Notification notification) {
     if (notification is ScrollUpdateNotification &&
         notification.depth == 0 &&
-        songStore.playingSong != null) {
+        mainStore.songService.playingSong != null) {
       var d = notification.dragDetails;
       if (d != null && d.delta != null) {
         var dy = d.delta.dy;
@@ -94,7 +93,7 @@ class _HomePageState extends State<HomePage>
   Widget build(BuildContext context) {
     return Observer(
       builder: (context) {
-        if (songStore.isLoading) {
+        if (mainStore.songService.isLoading) {
           return Scaffold(
               appBar: AppBar(
                 title: Text('Loading...'),
@@ -114,7 +113,7 @@ class _HomePageState extends State<HomePage>
                       actions: _appbarActions(),
                       floating: true,
                     ),
-                    songStore.songs.isEmpty
+                    mainStore.songService.songs.isEmpty
                         ? SliverToBoxAdapter(
                             child: EmptySongs(),
                           )
@@ -149,10 +148,11 @@ class _HomePageState extends State<HomePage>
             ),
           ),
           ListTile(
-            leading: Text(globalStore.isDark ? 'dark theme' : "light theme"),
+            leading: Text(
+                mainStore.themeService.isDark ? 'dark theme' : "light theme"),
             trailing: Switch(
-              value: globalStore.isDark,
-              onChanged: globalStore.setTheme,
+              value: mainStore.themeService.isDark,
+              onChanged: mainStore.themeService.setTheme,
             ),
           ),
           Divider(),

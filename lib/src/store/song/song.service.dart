@@ -1,7 +1,7 @@
 import 'package:mobx/mobx.dart';
 import 'package:flute_music_player/flute_music_player.dart';
 
-part 'song_store.g.dart';
+part 'song.service.g.dart';
 
 /// 音乐播放状态
 enum PlayerState {
@@ -10,11 +10,11 @@ enum PlayerState {
   stopped,
 }
 
-class SongStore = _SongStore with _$SongStore;
+class SongService = _SongService with _$SongService;
 
-abstract class _SongStore with Store {
-  _SongStore() {
-    _initPlayer();
+abstract class _SongService with Store {
+  _SongService() {
+    _init();
   }
 
   /// 加载本地音乐状态
@@ -43,7 +43,7 @@ abstract class _SongStore with Store {
 
   /// 总时长
   @observable
-  Duration duration = Duration(seconds: 0);
+  Duration duration = Duration(seconds: 1);
 
   /// 当前播放位置
   @observable
@@ -87,10 +87,10 @@ abstract class _SongStore with Store {
   }
 
   @action
-  Future<void> _initPlayer() async {
+  Future<void> _init() async {
     isLoading = true;
     songs = await MusicFinder.allSongs();
-    audioPlayer ??= new MusicFinder();
+    audioPlayer ??= MusicFinder();
     isLoading = false;
     // 总时长
     audioPlayer.setDurationHandler(_setDurationHandler);
@@ -154,6 +154,11 @@ abstract class _SongStore with Store {
     });
   }
 
+  @action
+  setCurrentIndex(int v) {
+    currentIndex = v;
+  }
+
   /// 每个song item被点击时事件处理
   @action
   itemSongTap(Song tapSong) {
@@ -169,7 +174,6 @@ abstract class _SongStore with Store {
 
     if (isPlaying) {
       // 暂停
-      // 在列表上点击你应该使用"stop()"而不是"pause()",因为stop会让song真正的结束。
       if (tapSong == playingSong) {
         pause();
       } else {
@@ -191,5 +195,3 @@ abstract class _SongStore with Store {
     }
   }
 }
-
-final songStore = SongStore();

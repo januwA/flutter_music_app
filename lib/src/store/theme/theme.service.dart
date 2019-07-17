@@ -1,21 +1,29 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_music/src/theme/dark_theme.dart';
+import 'package:flutter_music/src/theme/pink_theme.dart';
 import 'package:mobx/mobx.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-part 'global_store.g.dart';
 
-class GlobalStore = _GlobalStore with _$GlobalStore;
+part 'theme.service.g.dart';
 
-abstract class _GlobalStore with Store {
-  _GlobalStore() {
+class ThemeService = _ThemeService with _$ThemeService;
+
+abstract class _ThemeService with Store {
+  _ThemeService() {
     _init();
   }
+
   @observable
   bool isDark = false;
+
+  @computed
+  ThemeData get theme => isDark ? darkTheme : pinkTheme;
 
   @observable
   SharedPreferences _prefs;
 
   @action
-  setTheme(bool v) {
+  void setTheme(bool v) {
     _prefs.setBool('isDark', v);
     isDark = v;
   }
@@ -26,5 +34,3 @@ abstract class _GlobalStore with Store {
     isDark = _prefs.getBool('isDark') ?? false;
   }
 }
-
-final globalStore = GlobalStore();

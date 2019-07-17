@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'song_store.dart';
+part of 'song.service.dart';
 
 // **************************************************************************
 // StoreGenerator
@@ -8,7 +8,7 @@ part of 'song_store.dart';
 
 // ignore_for_file: non_constant_identifier_names, unnecessary_lambdas, prefer_expression_function_bodies, lines_longer_than_80_chars
 
-mixin _$SongStore on _SongStore, Store {
+mixin _$SongService on _SongService, Store {
   Computed<bool> _$isPlayingComputed;
 
   @override
@@ -20,7 +20,7 @@ mixin _$SongStore on _SongStore, Store {
   int get songLength =>
       (_$songLengthComputed ??= Computed<int>(() => super.songLength)).value;
 
-  final _$isLoadingAtom = Atom(name: '_SongStore.isLoading');
+  final _$isLoadingAtom = Atom(name: '_SongService.isLoading');
 
   @override
   bool get isLoading {
@@ -36,7 +36,7 @@ mixin _$SongStore on _SongStore, Store {
     _$isLoadingAtom.reportChanged();
   }
 
-  final _$songsAtom = Atom(name: '_SongStore.songs');
+  final _$songsAtom = Atom(name: '_SongService.songs');
 
   @override
   List<Song> get songs {
@@ -51,7 +51,7 @@ mixin _$SongStore on _SongStore, Store {
     _$songsAtom.reportChanged();
   }
 
-  final _$currentIndexAtom = Atom(name: '_SongStore.currentIndex');
+  final _$currentIndexAtom = Atom(name: '_SongService.currentIndex');
 
   @override
   int get currentIndex {
@@ -67,7 +67,7 @@ mixin _$SongStore on _SongStore, Store {
     _$currentIndexAtom.reportChanged();
   }
 
-  final _$playingSongAtom = Atom(name: '_SongStore.playingSong');
+  final _$playingSongAtom = Atom(name: '_SongService.playingSong');
 
   @override
   Song get playingSong {
@@ -83,7 +83,7 @@ mixin _$SongStore on _SongStore, Store {
     _$playingSongAtom.reportChanged();
   }
 
-  final _$playerStateAtom = Atom(name: '_SongStore.playerState');
+  final _$playerStateAtom = Atom(name: '_SongService.playerState');
 
   @override
   PlayerState get playerState {
@@ -99,7 +99,7 @@ mixin _$SongStore on _SongStore, Store {
     _$playerStateAtom.reportChanged();
   }
 
-  final _$audioPlayerAtom = Atom(name: '_SongStore.audioPlayer');
+  final _$audioPlayerAtom = Atom(name: '_SongService.audioPlayer');
 
   @override
   MusicFinder get audioPlayer {
@@ -115,7 +115,7 @@ mixin _$SongStore on _SongStore, Store {
     _$audioPlayerAtom.reportChanged();
   }
 
-  final _$durationAtom = Atom(name: '_SongStore.duration');
+  final _$durationAtom = Atom(name: '_SongService.duration');
 
   @override
   Duration get duration {
@@ -130,7 +130,7 @@ mixin _$SongStore on _SongStore, Store {
     _$durationAtom.reportChanged();
   }
 
-  final _$positionAtom = Atom(name: '_SongStore.position');
+  final _$positionAtom = Atom(name: '_SongService.position');
 
   @override
   Duration get position {
@@ -145,11 +145,11 @@ mixin _$SongStore on _SongStore, Store {
     _$positionAtom.reportChanged();
   }
 
-  final _$_initPlayerAsyncAction = AsyncAction('_initPlayer');
+  final _$_initAsyncAction = AsyncAction('_init');
 
   @override
-  Future<void> _initPlayer() {
-    return _$_initPlayerAsyncAction.run(() => super._initPlayer());
+  Future<void> _init() {
+    return _$_initAsyncAction.run(() => super._init());
   }
 
   final _$playAsyncAction = AsyncAction('play');
@@ -180,95 +180,105 @@ mixin _$SongStore on _SongStore, Store {
     return _$stopAsyncAction.run(() => super.stop());
   }
 
-  final _$_SongStoreActionController = ActionController(name: '_SongStore');
+  final _$_SongServiceActionController = ActionController(name: '_SongService');
 
   @override
   Song nextSong() {
-    final _$actionInfo = _$_SongStoreActionController.startAction();
+    final _$actionInfo = _$_SongServiceActionController.startAction();
     try {
       return super.nextSong();
     } finally {
-      _$_SongStoreActionController.endAction(_$actionInfo);
+      _$_SongServiceActionController.endAction(_$actionInfo);
     }
   }
 
   @override
   void _setDurationHandler(Duration d) {
-    final _$actionInfo = _$_SongStoreActionController.startAction();
+    final _$actionInfo = _$_SongServiceActionController.startAction();
     try {
       return super._setDurationHandler(d);
     } finally {
-      _$_SongStoreActionController.endAction(_$actionInfo);
+      _$_SongServiceActionController.endAction(_$actionInfo);
     }
   }
 
   @override
   void _setPositionHandler(Duration p) {
-    final _$actionInfo = _$_SongStoreActionController.startAction();
+    final _$actionInfo = _$_SongServiceActionController.startAction();
     try {
       return super._setPositionHandler(p);
     } finally {
-      _$_SongStoreActionController.endAction(_$actionInfo);
+      _$_SongServiceActionController.endAction(_$actionInfo);
     }
   }
 
   @override
   void _setCompletionHandler() {
-    final _$actionInfo = _$_SongStoreActionController.startAction();
+    final _$actionInfo = _$_SongServiceActionController.startAction();
     try {
       return super._setCompletionHandler();
     } finally {
-      _$_SongStoreActionController.endAction(_$actionInfo);
+      _$_SongServiceActionController.endAction(_$actionInfo);
     }
   }
 
   @override
   void _setErrorHandler(String msg) {
-    final _$actionInfo = _$_SongStoreActionController.startAction();
+    final _$actionInfo = _$_SongServiceActionController.startAction();
     try {
       return super._setErrorHandler(msg);
     } finally {
-      _$_SongStoreActionController.endAction(_$actionInfo);
+      _$_SongServiceActionController.endAction(_$actionInfo);
     }
   }
 
   @override
   void onComplete() {
-    final _$actionInfo = _$_SongStoreActionController.startAction();
+    final _$actionInfo = _$_SongServiceActionController.startAction();
     try {
       return super.onComplete();
     } finally {
-      _$_SongStoreActionController.endAction(_$actionInfo);
+      _$_SongServiceActionController.endAction(_$actionInfo);
     }
   }
 
   @override
   void seek(double v) {
-    final _$actionInfo = _$_SongStoreActionController.startAction();
+    final _$actionInfo = _$_SongServiceActionController.startAction();
     try {
       return super.seek(v);
     } finally {
-      _$_SongStoreActionController.endAction(_$actionInfo);
+      _$_SongServiceActionController.endAction(_$actionInfo);
     }
   }
 
   @override
   void switchMusic(Song clickedSong) {
-    final _$actionInfo = _$_SongStoreActionController.startAction();
+    final _$actionInfo = _$_SongServiceActionController.startAction();
     try {
       return super.switchMusic(clickedSong);
     } finally {
-      _$_SongStoreActionController.endAction(_$actionInfo);
+      _$_SongServiceActionController.endAction(_$actionInfo);
+    }
+  }
+
+  @override
+  dynamic setCurrentIndex(int v) {
+    final _$actionInfo = _$_SongServiceActionController.startAction();
+    try {
+      return super.setCurrentIndex(v);
+    } finally {
+      _$_SongServiceActionController.endAction(_$actionInfo);
     }
   }
 
   @override
   dynamic itemSongTap(Song tapSong) {
-    final _$actionInfo = _$_SongStoreActionController.startAction();
+    final _$actionInfo = _$_SongServiceActionController.startAction();
     try {
       return super.itemSongTap(tapSong);
     } finally {
-      _$_SongStoreActionController.endAction(_$actionInfo);
+      _$_SongServiceActionController.endAction(_$actionInfo);
     }
   }
 }
