@@ -4,12 +4,13 @@ import 'package:flutter/animation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_music/src/pages/home_page/home.store.dart';
-import 'package:flutter_music/src/pages/home_page/serarch_page.dart';
-import 'package:flutter_music/src/pages/home_page/song_grid.dart';
-import 'package:flutter_music/src/pages/home_page/song_list.dart';
 import 'package:flutter_music/src/shared/widgets/empty_songs.dart';
 import 'package:flutter_music/src/shared/widgets/playing_song.dart';
 import 'package:flutter_music/src/store/main/main.store.dart';
+
+import 'widgets/serarch_page.dart';
+import 'widgets/song_grid.dart';
+import 'widgets/song_list.dart';
 
 const int yoff = 3;
 

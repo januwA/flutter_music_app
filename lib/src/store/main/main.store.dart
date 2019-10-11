@@ -7,8 +7,8 @@ part 'main.store.g.dart';
 class MainStore = _MainStore with _$MainStore;
 
 abstract class _MainStore with Store {
-  final themeService = ThemeService();
-  final songService = SongService();
+  final ThemeService themeService = ThemeService();
+  final SongService songService = SongService();
 }
 
 MainStore mainStore = MainStore();

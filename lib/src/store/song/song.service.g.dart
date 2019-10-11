@@ -6,7 +6,7 @@ part of 'song.service.dart';
 // StoreGenerator
 // **************************************************************************
 
-// ignore_for_file: non_constant_identifier_names, unnecessary_lambdas, prefer_expression_function_bodies, lines_longer_than_80_chars
+// ignore_for_file: non_constant_identifier_names, unnecessary_lambdas, prefer_expression_function_bodies, lines_longer_than_80_chars, avoid_as, avoid_annotating_with_dynamic
 
 mixin _$SongService on _SongService, Store {
   Computed<bool> _$isPlayingComputed;
@@ -24,125 +24,136 @@ mixin _$SongService on _SongService, Store {
 
   @override
   bool get isLoading {
+    _$isLoadingAtom.context.enforceReadPolicy(_$isLoadingAtom);
     _$isLoadingAtom.reportObserved();
     return super.isLoading;
   }
 
   @override
   set isLoading(bool value) {
-    _$isLoadingAtom.context
-        .checkIfStateModificationsAreAllowed(_$isLoadingAtom);
-    super.isLoading = value;
-    _$isLoadingAtom.reportChanged();
+    _$isLoadingAtom.context.conditionallyRunInAction(() {
+      super.isLoading = value;
+      _$isLoadingAtom.reportChanged();
+    }, _$isLoadingAtom, name: '${_$isLoadingAtom.name}_set');
   }
 
   final _$songsAtom = Atom(name: '_SongService.songs');
 
   @override
   List<Song> get songs {
+    _$songsAtom.context.enforceReadPolicy(_$songsAtom);
     _$songsAtom.reportObserved();
     return super.songs;
   }
 
   @override
   set songs(List<Song> value) {
-    _$songsAtom.context.checkIfStateModificationsAreAllowed(_$songsAtom);
-    super.songs = value;
-    _$songsAtom.reportChanged();
+    _$songsAtom.context.conditionallyRunInAction(() {
+      super.songs = value;
+      _$songsAtom.reportChanged();
+    }, _$songsAtom, name: '${_$songsAtom.name}_set');
   }
 
   final _$currentIndexAtom = Atom(name: '_SongService.currentIndex');
 
   @override
   int get currentIndex {
+    _$currentIndexAtom.context.enforceReadPolicy(_$currentIndexAtom);
     _$currentIndexAtom.reportObserved();
     return super.currentIndex;
   }
 
   @override
   set currentIndex(int value) {
-    _$currentIndexAtom.context
-        .checkIfStateModificationsAreAllowed(_$currentIndexAtom);
-    super.currentIndex = value;
-    _$currentIndexAtom.reportChanged();
+    _$currentIndexAtom.context.conditionallyRunInAction(() {
+      super.currentIndex = value;
+      _$currentIndexAtom.reportChanged();
+    }, _$currentIndexAtom, name: '${_$currentIndexAtom.name}_set');
   }
 
   final _$playingSongAtom = Atom(name: '_SongService.playingSong');
 
   @override
   Song get playingSong {
+    _$playingSongAtom.context.enforceReadPolicy(_$playingSongAtom);
     _$playingSongAtom.reportObserved();
     return super.playingSong;
   }
 
   @override
   set playingSong(Song value) {
-    _$playingSongAtom.context
-        .checkIfStateModificationsAreAllowed(_$playingSongAtom);
-    super.playingSong = value;
-    _$playingSongAtom.reportChanged();
+    _$playingSongAtom.context.conditionallyRunInAction(() {
+      super.playingSong = value;
+      _$playingSongAtom.reportChanged();
+    }, _$playingSongAtom, name: '${_$playingSongAtom.name}_set');
   }
 
   final _$playerStateAtom = Atom(name: '_SongService.playerState');
 
   @override
   PlayerState get playerState {
+    _$playerStateAtom.context.enforceReadPolicy(_$playerStateAtom);
     _$playerStateAtom.reportObserved();
     return super.playerState;
   }
 
   @override
   set playerState(PlayerState value) {
-    _$playerStateAtom.context
-        .checkIfStateModificationsAreAllowed(_$playerStateAtom);
-    super.playerState = value;
-    _$playerStateAtom.reportChanged();
+    _$playerStateAtom.context.conditionallyRunInAction(() {
+      super.playerState = value;
+      _$playerStateAtom.reportChanged();
+    }, _$playerStateAtom, name: '${_$playerStateAtom.name}_set');
   }
 
   final _$audioPlayerAtom = Atom(name: '_SongService.audioPlayer');
 
   @override
   MusicFinder get audioPlayer {
+    _$audioPlayerAtom.context.enforceReadPolicy(_$audioPlayerAtom);
     _$audioPlayerAtom.reportObserved();
     return super.audioPlayer;
   }
 
   @override
   set audioPlayer(MusicFinder value) {
-    _$audioPlayerAtom.context
-        .checkIfStateModificationsAreAllowed(_$audioPlayerAtom);
-    super.audioPlayer = value;
-    _$audioPlayerAtom.reportChanged();
+    _$audioPlayerAtom.context.conditionallyRunInAction(() {
+      super.audioPlayer = value;
+      _$audioPlayerAtom.reportChanged();
+    }, _$audioPlayerAtom, name: '${_$audioPlayerAtom.name}_set');
   }
 
   final _$durationAtom = Atom(name: '_SongService.duration');
 
   @override
   Duration get duration {
+    _$durationAtom.context.enforceReadPolicy(_$durationAtom);
     _$durationAtom.reportObserved();
     return super.duration;
   }
 
   @override
   set duration(Duration value) {
-    _$durationAtom.context.checkIfStateModificationsAreAllowed(_$durationAtom);
-    super.duration = value;
-    _$durationAtom.reportChanged();
+    _$durationAtom.context.conditionallyRunInAction(() {
+      super.duration = value;
+      _$durationAtom.reportChanged();
+    }, _$durationAtom, name: '${_$durationAtom.name}_set');
   }
 
   final _$positionAtom = Atom(name: '_SongService.position');
 
   @override
   Duration get position {
+    _$positionAtom.context.enforceReadPolicy(_$positionAtom);
     _$positionAtom.reportObserved();
     return super.position;
   }
 
   @override
   set position(Duration value) {
-    _$positionAtom.context.checkIfStateModificationsAreAllowed(_$positionAtom);
-    super.position = value;
-    _$positionAtom.reportChanged();
+    _$positionAtom.context.conditionallyRunInAction(() {
+      super.position = value;
+      _$positionAtom.reportChanged();
+    }, _$positionAtom, name: '${_$positionAtom.name}_set');
   }
 
   final _$_initAsyncAction = AsyncAction('_init');

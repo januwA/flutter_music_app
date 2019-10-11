@@ -6,7 +6,7 @@ part of 'theme.service.dart';
 // StoreGenerator
 // **************************************************************************
 
-// ignore_for_file: non_constant_identifier_names, unnecessary_lambdas, prefer_expression_function_bodies, lines_longer_than_80_chars
+// ignore_for_file: non_constant_identifier_names, unnecessary_lambdas, prefer_expression_function_bodies, lines_longer_than_80_chars, avoid_as, avoid_annotating_with_dynamic
 
 mixin _$ThemeService on _ThemeService, Store {
   Computed<ThemeData> _$themeComputed;
@@ -19,30 +19,34 @@ mixin _$ThemeService on _ThemeService, Store {
 
   @override
   bool get isDark {
+    _$isDarkAtom.context.enforceReadPolicy(_$isDarkAtom);
     _$isDarkAtom.reportObserved();
     return super.isDark;
   }
 
   @override
   set isDark(bool value) {
-    _$isDarkAtom.context.checkIfStateModificationsAreAllowed(_$isDarkAtom);
-    super.isDark = value;
-    _$isDarkAtom.reportChanged();
+    _$isDarkAtom.context.conditionallyRunInAction(() {
+      super.isDark = value;
+      _$isDarkAtom.reportChanged();
+    }, _$isDarkAtom, name: '${_$isDarkAtom.name}_set');
   }
 
   final _$_prefsAtom = Atom(name: '_ThemeService._prefs');
 
   @override
   SharedPreferences get _prefs {
+    _$_prefsAtom.context.enforceReadPolicy(_$_prefsAtom);
     _$_prefsAtom.reportObserved();
     return super._prefs;
   }
 
   @override
   set _prefs(SharedPreferences value) {
-    _$_prefsAtom.context.checkIfStateModificationsAreAllowed(_$_prefsAtom);
-    super._prefs = value;
-    _$_prefsAtom.reportChanged();
+    _$_prefsAtom.context.conditionallyRunInAction(() {
+      super._prefs = value;
+      _$_prefsAtom.reportChanged();
+    }, _$_prefsAtom, name: '${_$_prefsAtom.name}_set');
   }
 
   final _$_initAsyncAction = AsyncAction('_init');

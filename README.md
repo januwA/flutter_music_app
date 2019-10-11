@@ -5,5 +5,4 @@
 - [flute_music_player插件](https://pub.flutter-io.cn/packages/flute_music_player)
 - [更多的参考代码](https://github.com/iampawan/Flutter-Music-Player)
 
-
-![](https://s2.ax1x.com/2019/05/15/ETpxxJ.md.jpg)
+![](./docs/demo.jpg)

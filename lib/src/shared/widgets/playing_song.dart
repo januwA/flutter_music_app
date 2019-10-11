@@ -17,9 +17,10 @@ class PlayingSongView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var theme = Theme.of(context);
     return Observer(
       builder: (_) => mainStore.songService.playingSong == null
-          ? Container()
+          ? SizedBox()
           : Card(
               child: Column(
                 children: <Widget>[
@@ -46,11 +47,16 @@ class PlayingSongView extends StatelessWidget {
                         CircularProgressIndicator(
                           backgroundColor: Colors.grey[300],
                           strokeWidth: 2.0,
-                          value: _ourMap(currentTimeMilliseconds, 0,
-                              mainStore.songService.playingSong.duration, 0, 1),
+                          value: _ourMap(
+                            currentTimeMilliseconds,
+                            0,
+                            mainStore.songService.playingSong.duration,
+                            0,
+                            1,
+                          ),
                         ),
                         IconButton(
-                          color: Theme.of(context).accentColor,
+                          color: theme.accentColor,
                           icon: Icon(
                             mainStore.songService.playerState !=
                                     PlayerState.playing
@@ -109,6 +115,7 @@ class _SongSlider extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var theme = Theme.of(context);
     return Container(
       padding: EdgeInsets.only(left: 8.0, right: 8.0),
       child: Row(
@@ -116,8 +123,8 @@ class _SongSlider extends StatelessWidget {
           Text(positionText),
           Expanded(
             child: Slider(
-              activeColor: Theme.of(context).accentColor,
-              inactiveColor: Theme.of(context).accentColor.withAlpha(100),
+              activeColor: theme.accentColor,
+              inactiveColor: theme.accentColor.withAlpha(100),
               min: 0,
               max: _maxSeconds,
               value: _valueSeconds,

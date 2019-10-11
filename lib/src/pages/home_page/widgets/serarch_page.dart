@@ -5,6 +5,10 @@ import 'package:flutter_music/src/shared/widgets/song_title.dart';
 import 'package:flutter_music/src/store/main/main.store.dart';
 
 class SearchPage extends SearchDelegate<String> {
+
+  SearchPage() : super(
+    searchFieldLabel: "Enter Song Name."
+  );
   @override
   ThemeData appBarTheme(BuildContext context) {
     return Theme.of(context);

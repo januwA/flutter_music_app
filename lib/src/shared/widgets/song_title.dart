@@ -1,10 +1,11 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flute_music_player/flute_music_player.dart';
 import 'package:flutter_music/src/store/main/main.store.dart';
 
 class SongTitle extends StatelessWidget {
+  static const BoxFit _fit = BoxFit.cover;
+  static const double _borderRadius = 4.0;
   final Song song;
   final BoxFit fit;
   final double borderRadius;
@@ -15,8 +16,8 @@ class SongTitle extends StatelessWidget {
   SongTitle(
     this.song, {
     Key key,
-    this.fit = BoxFit.fill,
-    this.borderRadius = 4.0,
+    this.fit = _fit,
+    this.borderRadius = _borderRadius,
     this.grid = false,
     this.width,
     this.height,
@@ -25,8 +26,8 @@ class SongTitle extends StatelessWidget {
   SongTitle.grid(
     song, {
     Key key,
-    BoxFit fit = BoxFit.fill,
-    double borderRadius = 4.0,
+    BoxFit fit = _fit,
+    double borderRadius = _borderRadius,
     double height,
     double width,
   }) : this(
@@ -41,14 +42,13 @@ class SongTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     BorderRadius imageBorderRadius = BorderRadius.circular(borderRadius);
+    var theme = Theme.of(context);
     if (grid) {
       return ClipRRect(
         borderRadius: imageBorderRadius,
         child: song.albumArt == null
-            ? CachedNetworkImage(
-                imageUrl: "https://s2.ax1x.com/2019/05/22/V9fCKH.jpg",
-                placeholder: (context, url) => Center(child: CircularProgressIndicator()),
-                errorWidget: (context, url, error) => new Icon(Icons.error),
+            ? Image.asset(
+                'assets/i.jpg',
                 fit: fit,
                 height: height,
                 width: width,
@@ -62,9 +62,8 @@ class SongTitle extends StatelessWidget {
       );
     }
     return CircleAvatar(
-      backgroundColor: mainStore.themeService.isDark
-          ? Colors.white
-          : Theme.of(context).primaryColor,
+      backgroundColor:
+          mainStore.themeService.isDark ? Colors.white : theme.primaryColor,
       child: song.albumArt == null
           ? Text(song.title[0])
           : ClipRRect(
