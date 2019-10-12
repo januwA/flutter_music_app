@@ -90,6 +90,7 @@ abstract class _SongService with Store {
   Future<void> _init() async {
     isLoading = true;
     songs = await MusicFinder.allSongs();
+    print(songs.length);
     audioPlayer ??= MusicFinder();
     isLoading = false;
     // 总时长
