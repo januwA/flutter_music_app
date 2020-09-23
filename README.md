@@ -1,9 +1,6 @@
-这是一个显示，播放(列表循环)本地音乐的flutter项目。[查看教程](https://www.youtube.com/watch?v=eWicXD5vkyg)
+这是一个显示，播放(列表循环)本地音乐的flutter项目。
 
 > 注：需要配置"AndroidManifest.xml"向用户获取权限。
-
-- [flute_music_player插件](https://pub.flutter-io.cn/packages/flute_music_player)
-- [更多的参考代码](https://github.com/iampawan/Flutter-Music-Player)
 
 ```
 flutter packages pub run build_runner build   // 执行一次build命令
@@ -18,4 +15,6 @@ update flutter template:
 λ flutter create --project-name flutter_music --org com.ajanuw ./
 ```
 
-[如何打包apk?](https://flutter.dev/docs/deployment/android)
+- [flutter_audio_query 获取本地音乐信息](https://pub.flutter-io.cn/packages/flutter_audio_query)
+- [audioplayers 播放音乐](https://pub.flutter-io.cn/packages/audioplayers)
+- [如何打包apk?](https://flutter.dev/docs/deployment/android)
