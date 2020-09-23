@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flute_music_player/flute_music_player.dart';
+import 'package:flutter_audio_query/flutter_audio_query.dart';
 import 'package:flutter_music/src/shared/widgets/overflow_text.dart';
 import 'package:flutter_music/src/shared/widgets/song_title.dart';
 import 'package:flutter_music/src/store/main/main.store.dart';
@@ -40,7 +40,7 @@ class SearchPage extends SearchDelegate<String> {
   @override
   Widget buildResults(BuildContext context) {
     var filterSons = mainStore.songService.songs
-        .where((Song s) => s.title.contains(query.trim()))
+        .where((SongInfo s) => s.title.contains(query.trim()))
         .toList();
     return _buildListView(filterSons, context);
   }
@@ -49,12 +49,12 @@ class SearchPage extends SearchDelegate<String> {
   @override
   Widget buildSuggestions(BuildContext context) {
     var filterSons = mainStore.songService.songs
-        .where((Song s) => s.title.contains(query.trim()))
+        .where((SongInfo s) => s.title.contains(query.trim()))
         .toList();
     return _buildListView(filterSons, context);
   }
 
-  ListView _buildListView(List<Song> filterSons, BuildContext context) {
+  ListView _buildListView(List<SongInfo> filterSons, BuildContext context) {
     return ListView.builder(
       itemCount: filterSons.length,
       itemBuilder: (context, index) {

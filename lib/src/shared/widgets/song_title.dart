@@ -1,12 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flute_music_player/flute_music_player.dart';
+import 'package:flutter_audio_query/flutter_audio_query.dart';
 import 'package:flutter_music/src/store/main/main.store.dart';
 
 class SongTitle extends StatelessWidget {
   static const BoxFit _fit = BoxFit.cover;
   static const double _borderRadius = 4.0;
-  final Song song;
+  final SongInfo song;
   final BoxFit fit;
   final double borderRadius;
   final bool grid;
@@ -41,12 +41,13 @@ class SongTitle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String artistArtPath = mainStore.songService.getArtistArtPath(song.artistId);
     BorderRadius imageBorderRadius = BorderRadius.circular(borderRadius);
     var theme = Theme.of(context);
     if (grid) {
       return ClipRRect(
         borderRadius: imageBorderRadius,
-        child: song.albumArt == null
+        child: artistArtPath.isEmpty
             ? Image.asset(
                 'assets/i.jpg',
                 fit: fit,
@@ -54,7 +55,7 @@ class SongTitle extends StatelessWidget {
                 width: width,
               )
             : Image.file(
-                File(song.albumArt),
+                File(artistArtPath),
                 fit: fit,
                 height: height,
                 width: width,
@@ -64,12 +65,12 @@ class SongTitle extends StatelessWidget {
     return CircleAvatar(
       backgroundColor:
           mainStore.themeService.isDark ? Colors.white : theme.primaryColor,
-      child: song.albumArt == null
+      child: artistArtPath.isEmpty
           ? Text(song.title[0])
           : ClipRRect(
               borderRadius: imageBorderRadius,
               child: Image.file(
-                File(song.albumArt),
+                File(artistArtPath),
                 fit: fit,
                 height: height,
                 width: width,

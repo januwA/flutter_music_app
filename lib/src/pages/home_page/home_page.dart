@@ -41,6 +41,7 @@ class _HomePageState extends State<HomePage>
   @override
   void dispose() {
     _positionC?.dispose();
+    mainStore.songService.dispose();
     super.dispose();
   }
 
@@ -75,7 +76,7 @@ class _HomePageState extends State<HomePage>
     return false;
   }
 
-  /// 返回头部的actions
+  /// header actions
   List<Widget> _appbarActions() {
     return [
       IconButton(
@@ -110,7 +111,7 @@ class _HomePageState extends State<HomePage>
                 child: CustomScrollView(
                   slivers: <Widget>[
                     SliverAppBar(
-                      title: Text(homeStore.homeTitle),
+                      title: Text("Music"),
                       actions: _appbarActions(),
                       floating: true,
                     ),

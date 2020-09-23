@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flute_music_player/flute_music_player.dart';
+import 'package:flutter_audio_query/flutter_audio_query.dart';
 import 'package:flutter_music/src/shared/widgets/overflow_text.dart';
 import 'package:flutter_music/src/shared/widgets/song_title.dart';
 import 'package:flutter_music/src/store/main/main.store.dart';
@@ -10,7 +10,7 @@ class SongList extends StatelessWidget {
     return SliverList(
       delegate: SliverChildBuilderDelegate(
         (context, int index) {
-          Song tapSong = mainStore.songService.songs[index];
+          SongInfo tapSong = mainStore.songService.songs[index];
           return ListTile(
             leading: SongTitle(tapSong),
             title: OverflowText(tapSong.title),
@@ -18,7 +18,7 @@ class SongList extends StatelessWidget {
             onTap: () => mainStore.songService.itemSongTap(tapSong),
           );
         },
-        childCount: mainStore.songService.songLength,
+        childCount: mainStore.songService.songs.length,
       ),
     );
   }

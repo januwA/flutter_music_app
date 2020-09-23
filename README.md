@@ -12,3 +12,10 @@ flutter packages pub run build_runner watch --delete-conflicting-outputs  // 删
 ```
 
 ![](./docs/demo.jpg)
+
+update flutter template:
+```shell
+λ flutter create --project-name flutter_music --org com.ajanuw ./
+```
+
+[如何打包apk?](https://flutter.dev/docs/deployment/android)

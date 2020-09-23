@@ -1,4 +1,3 @@
-import 'package:flutter_music/src/store/main/main.store.dart';
 import 'package:mobx/mobx.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 part 'home.store.g.dart';
@@ -15,10 +14,6 @@ abstract class _HomeStore with Store {
   ///
   @observable
   bool isGrid = false;
-
-  @computed
-  String get homeTitle =>
-      'Music [${mainStore.songService.currentIndex + 1}/${mainStore.songService.songLength}]';
 
   @action
   Future<void> _init() async {

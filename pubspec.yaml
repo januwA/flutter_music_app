@@ -1,29 +1,29 @@
 name: flutter_music
 description: play user local music.
-version: 1.1.1
+version: 2.0.0
 
 environment:
-  sdk: ">=2.2.2 <3.0.0"
+  sdk: '>=2.7.0 <3.0.0'
 
 dependencies:
   flutter:
     sdk: flutter
 
-  cupertino_icons: ^0.1.2
-  # flute_music_player: ^0.0.6
-  flute_music_player:
-    git:
-      url: https://github.com/januwA/Flute-Music-Player.git
+  cupertino_icons: ^1.0.0
+  flutter_audio_query: "^0.3.5+6"
+  audioplayers: ^0.16.1
   shared_preferences: ^0.5.3+4
-  mobx: ^0.3.8+1
-  flutter_mobx: ^0.3.3+1
+  mobx: ^1.2.1+2
+  flutter_mobx: ^1.1.0+2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   build_runner:
   mobx_codegen:
-
+    
+dependency_overrides:
+  analyzer: '0.39.14'
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec
 

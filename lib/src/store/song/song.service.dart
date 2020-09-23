@@ -1,14 +1,8 @@
+import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter_audio_query/flutter_audio_query.dart';
 import 'package:mobx/mobx.dart';
-import 'package:flute_music_player/flute_music_player.dart';
 
 part 'song.service.g.dart';
-
-/// 音乐播放状态
-enum PlayerState {
-  playing,
-  paused,
-  stopped,
-}
 
 class SongService = _SongService with _$SongService;
 
@@ -21,25 +15,23 @@ abstract class _SongService with Store {
   @observable
   bool isLoading = false;
 
+  FlutterAudioQuery audioQuery;
+
   /// 本地歌曲列表
   @observable
-  List<Song> songs = List<Song>();
-
-  /// 正在播放音乐的index
+  List<SongInfo> songs = List<SongInfo>();
   @observable
-  int currentIndex = -1;
+  List<ArtistInfo> artists = List<ArtistInfo>();
+  @observable
+  AudioPlayerState state = AudioPlayerState.STOPPED;
 
   /// 正在播放的音乐
   @observable
-  Song playingSong;
-
-  /// 播放状态
-  @observable
-  PlayerState playerState;
+  SongInfo playingSong;
 
   /// 控制器
   @observable
-  MusicFinder audioPlayer;
+  AudioPlayer audioPlayer;
 
   /// 总时长
   @observable
@@ -49,18 +41,9 @@ abstract class _SongService with Store {
   @observable
   Duration position = Duration(seconds: 0);
 
-  @computed
-  bool get isPlaying => playerState == PlayerState.playing;
-
-  @computed
-  int get songLength => songs.length;
-
-  /// 下一首歌
   @action
-  Song nextSong() {
-    currentIndex++;
-    playingSong = songs[currentIndex];
-    return songs[currentIndex % songLength];
+  void setState() {
+    state = audioPlayer.state;
   }
 
   @action
@@ -74,14 +57,14 @@ abstract class _SongService with Store {
   }
 
   @action
-  void _setCompletionHandler() {
-    onComplete();
-    position = duration;
+  void _setCompletionHandler(_) {
+    int index = songs.indexOf(playingSong);
+    int nextIndex = (index + 1) % songs.length;
+    itemSongTap(songs[nextIndex]);
   }
 
   @action
   void _setErrorHandler(String msg) {
-    playerState = PlayerState.stopped;
     duration = new Duration(seconds: 0);
     position = new Duration(seconds: 0);
   }
@@ -89,110 +72,60 @@ abstract class _SongService with Store {
   @action
   Future<void> _init() async {
     isLoading = true;
-    songs = await MusicFinder.allSongs();
-    print(songs.length);
-    audioPlayer ??= MusicFinder();
+    audioQuery ??= FlutterAudioQuery();
+    songs = await audioQuery.getSongs();
+    artists = await audioQuery.getArtists();
+    audioPlayer ??= AudioPlayer();
+    AudioPlayer.logEnabled = false;
     isLoading = false;
+
     // 总时长
-    audioPlayer.setDurationHandler(_setDurationHandler);
+    audioPlayer.onDurationChanged.listen(_setDurationHandler);
 
     // 播放位置变化
-    audioPlayer.setPositionHandler(_setPositionHandler);
+    audioPlayer.onAudioPositionChanged.listen(_setPositionHandler);
 
     // 完成时
-    audioPlayer.setCompletionHandler(_setCompletionHandler);
+    audioPlayer.onPlayerCompletion.listen(_setCompletionHandler);
 
     // 错误时
-    audioPlayer.setErrorHandler(_setErrorHandler);
+    audioPlayer.onPlayerError.listen(_setErrorHandler);
   }
 
-  /// 完成一首后，进入下一首
-  @action
-  void onComplete() {
-    playerState = PlayerState.stopped;
-    play(nextSong().uri);
-  }
-
-  /// 播放
-  @action
-  Future<void> play(String songUrl) async {
-    final result = await audioPlayer.play(songUrl);
-    if (result == 1) playerState = PlayerState.playing;
-  }
-
-  /// 播放
-  @action
-  Future<void> playLocal(String songUrl) async {
-    final result = await audioPlayer.play(songUrl);
-    if (result == 1) playerState = PlayerState.playing;
-  }
-
-  /// 暂停音乐
-  @action
-  Future<void> pause() async {
-    final result = await audioPlayer.pause();
-    if (result == 1) playerState = PlayerState.paused;
-  }
-
-  /// 结束音乐
-  @action
-  Future<void> stop() async {
-    final result = await audioPlayer.stop();
-    if (result == 1) playerState = PlayerState.stopped;
+  dispose() {
+    audioPlayer?.stop();
+    audioPlayer?.dispose();
   }
 
   @action
-  void seek(double v) {
+  void seek(Duration v) {
     audioPlayer.seek(v);
   }
 
-  /// 切换播放歌曲
-  @action
-  void switchMusic(Song clickedSong) {
-    playingSong = clickedSong;
-    stop().then((_) {
-      play(playingSong.uri);
-    });
-  }
-
-  @action
-  setCurrentIndex(int v) {
-    currentIndex = v;
+  String getArtistArtPath(String artistId) {
+    try {
+      return artists
+              .firstWhere((i) => i.id.contains(artistId))
+              ?.artistArtPath
+              ?.trim() ??
+          "";
+    } catch (e) {
+      return "";
+    }
   }
 
   /// 每个song item被点击时事件处理
   @action
-  itemSongTap(Song tapSong) {
-    currentIndex = songs.indexOf(tapSong);
-    // print(s.id); // 23117
-    // print(s.album); // ジョジョの奇妙な冒険 O.S.T Battle Tendency [Leicht Verwendbar]
-    // print(s.albumArt); // /storage/emulated/0/Android/data/com.android.providers.media/albumthumbs/1556812126330
-    // print(s.albumId); // 7
-    // print(s.artist);//岩崎琢
-    // print(s.duration);//201638
-    // print(s.title);//Awake
-    // print(s.uri);// /storage/emulated/0/netease/cloudmusic/Music/岩崎琢 - Awake.mp3
-
-    if (isPlaying) {
-      // 暂停
-      if (tapSong == playingSong) {
-        pause();
-      } else {
-        switchMusic(tapSong);
-      }
+  itemSongTap(SongInfo it) async {
+    if (audioPlayer.state == AudioPlayerState.PLAYING) {
+      if (it == playingSong)
+        await audioPlayer.pause();
+      else
+        await audioPlayer.play(it.filePath);
     } else {
-      // 播放
-      if (playingSong == null) {
-        // 第一次进入直接播放点击歌曲
-        playingSong = tapSong;
-        play(playingSong.uri);
-      } else if (tapSong != playingSong) {
-        // 在列表中点击了其他歌曲
-        switchMusic(tapSong);
-      } else if (tapSong == playingSong) {
-        // 点击了同一首歌曲
-        playLocal(playingSong.uri);
-      }
+      await audioPlayer.play(it.filePath);
     }
+    setState();
+    playingSong = it;
   }
 }

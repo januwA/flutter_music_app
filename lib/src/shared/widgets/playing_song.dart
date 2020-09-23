@@ -1,9 +1,9 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_music/src/shared/widgets/overflow_text.dart';
 import 'package:flutter_music/src/shared/widgets/song_title.dart';
 import 'package:flutter_music/src/store/main/main.store.dart';
-import 'package:flutter_music/src/store/song/song.service.dart';
 
 class PlayingSongView extends StatelessWidget {
   int get currentTimeMilliseconds => mainStore.songService.position == null
@@ -50,7 +50,7 @@ class PlayingSongView extends StatelessWidget {
                           value: _ourMap(
                             currentTimeMilliseconds,
                             0,
-                            mainStore.songService.playingSong.duration,
+                            mainStore.songService.duration.inMilliseconds,
                             0,
                             1,
                           ),
@@ -58,19 +58,20 @@ class PlayingSongView extends StatelessWidget {
                         IconButton(
                           color: theme.accentColor,
                           icon: Icon(
-                            mainStore.songService.playerState !=
-                                    PlayerState.playing
+                            mainStore.songService.state !=
+                                    AudioPlayerState.PLAYING
                                 ? Icons.play_arrow
                                 : Icons.pause,
                           ),
                           onPressed: () async {
-                            if (mainStore.songService.playerState ==
-                                PlayerState.playing) {
-                              await mainStore.songService.pause();
+                            if (mainStore.songService.state ==
+                                AudioPlayerState.PLAYING) {
+                              await mainStore.songService.audioPlayer.pause();
                             } else {
-                              await mainStore.songService.playLocal(
-                                  mainStore.songService.playingSong.uri);
+                              await mainStore.songService.audioPlayer.play(
+                                  mainStore.songService.playingSong.filePath);
                             }
+                            mainStore.songService.setState();
                           },
                         )
                       ],
@@ -122,14 +123,25 @@ class _SongSlider extends StatelessWidget {
         children: <Widget>[
           Text(positionText),
           Expanded(
-            child: Slider(
-              activeColor: theme.accentColor,
-              inactiveColor: theme.accentColor.withAlpha(100),
-              min: 0,
-              max: _maxSeconds,
-              value: _valueSeconds,
-              onChanged: (_) {},
-              onChangeEnd: mainStore.songService.seek,
+            child: Theme(
+              data: Theme.of(context).copyWith(
+                sliderTheme: Theme.of(context).sliderTheme.copyWith(
+                      trackHeight: 3.0,
+                      thumbShape: RoundSliderThumbShape(
+                        enabledThumbRadius: 5,
+                      ),
+                    ),
+              ),
+              child: Slider(
+                activeColor: theme.accentColor,
+                inactiveColor: theme.accentColor.withAlpha(100),
+                min: 0,
+                max: _maxSeconds,
+                value: _valueSeconds,
+                onChanged: (_) {},
+                onChangeEnd: (double v) =>
+                    mainStore.songService.seek(Duration(seconds: v.toInt())),
+              ),
             ),
           ),
           Text(durationText),
