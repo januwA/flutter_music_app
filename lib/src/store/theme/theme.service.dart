@@ -16,7 +16,7 @@ abstract class _ThemeService with Store {
   @action
   Future<void> _init() async {
     _prefs ??= await SharedPreferences.getInstance();
-    isDark = _prefs.getBool('isDark') ?? false;
+    isDark = _prefs!.getBool('isDark') ?? false;
   }
 
   @observable
@@ -26,11 +26,11 @@ abstract class _ThemeService with Store {
   ThemeData get theme => isDark ? darkTheme : pinkTheme;
 
   @observable
-  SharedPreferences _prefs;
+  SharedPreferences? _prefs;
 
   @action
   void setTheme(bool v) {
     isDark = v;
-    _prefs.setBool('isDark', isDark);
+    _prefs?.setBool('isDark', isDark);
   }
 }

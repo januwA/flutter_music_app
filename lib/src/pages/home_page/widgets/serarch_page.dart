@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_audio_query/flutter_audio_query.dart';
+import 'package:on_audio_query/on_audio_query.dart';
 import 'package:flutter_music/src/shared/widgets/overflow_text.dart';
 import 'package:flutter_music/src/shared/widgets/song_title.dart';
 import 'package:flutter_music/src/store/main/main.store.dart';
@@ -40,7 +40,7 @@ class SearchPage extends SearchDelegate<String> {
   @override
   Widget buildResults(BuildContext context) {
     var filterSons = mainStore.songService.songs
-        .where((SongInfo s) => s.title.contains(query.trim()))
+        .where((SongModel s) => s.title.contains(query.trim()))
         .toList();
     return _buildListView(filterSons, context);
   }
@@ -49,12 +49,12 @@ class SearchPage extends SearchDelegate<String> {
   @override
   Widget buildSuggestions(BuildContext context) {
     var filterSons = mainStore.songService.songs
-        .where((SongInfo s) => s.title.contains(query.trim()))
+        .where((SongModel s) => s.title.contains(query.trim()))
         .toList();
     return _buildListView(filterSons, context);
   }
 
-  ListView _buildListView(List<SongInfo> filterSons, BuildContext context) {
+  ListView _buildListView(List<SongModel> filterSons, BuildContext context) {
     return ListView.builder(
       itemCount: filterSons.length,
       itemBuilder: (context, index) {
@@ -62,10 +62,10 @@ class SearchPage extends SearchDelegate<String> {
         return ListTile(
           leading: SongTitle(s),
           title: OverflowText(s.title),
-          subtitle: OverflowText(s.album),
+          subtitle: OverflowText(s.album ?? ''),
           onTap: () {
             mainStore.songService.itemSongTap(s);
-            close(context, null);
+            close(context, '');
           },
         );
       },

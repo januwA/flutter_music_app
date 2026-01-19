@@ -6,25 +6,25 @@ part of 'home.store.dart';
 // StoreGenerator
 // **************************************************************************
 
-// ignore_for_file: non_constant_identifier_names, unnecessary_brace_in_string_interps, unnecessary_lambdas, prefer_expression_function_bodies, lines_longer_than_80_chars, avoid_as, avoid_annotating_with_dynamic
+// ignore_for_file: non_constant_identifier_names, unnecessary_brace_in_string_interps, unnecessary_lambdas, prefer_expression_function_bodies, lines_longer_than_80_chars, avoid_as, avoid_annotating_with_dynamic, no_leading_underscores_for_local_identifiers
 
 mixin _$HomeStore on _HomeStore, Store {
-  final _$_prefsAtom = Atom(name: '_HomeStore._prefs');
+  late final _$_prefsAtom = Atom(name: '_HomeStore._prefs', context: context);
 
   @override
-  SharedPreferences get _prefs {
+  SharedPreferences? get _prefs {
     _$_prefsAtom.reportRead();
     return super._prefs;
   }
 
   @override
-  set _prefs(SharedPreferences value) {
+  set _prefs(SharedPreferences? value) {
     _$_prefsAtom.reportWrite(value, super._prefs, () {
       super._prefs = value;
     });
   }
 
-  final _$isGridAtom = Atom(name: '_HomeStore.isGrid');
+  late final _$isGridAtom = Atom(name: '_HomeStore.isGrid', context: context);
 
   @override
   bool get isGrid {
@@ -39,14 +39,16 @@ mixin _$HomeStore on _HomeStore, Store {
     });
   }
 
-  final _$_initAsyncAction = AsyncAction('_HomeStore._init');
+  late final _$_initAsyncAction =
+      AsyncAction('_HomeStore._init', context: context);
 
   @override
   Future<void> _init() {
     return _$_initAsyncAction.run(() => super._init());
   }
 
-  final _$_HomeStoreActionController = ActionController(name: '_HomeStore');
+  late final _$_HomeStoreActionController =
+      ActionController(name: '_HomeStore', context: context);
 
   @override
   void setLayout() {

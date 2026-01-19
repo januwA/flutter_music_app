@@ -4,8 +4,8 @@ class PageLoading extends StatelessWidget {
   final Widget body;
 
   PageLoading({
-    Key key,
-    this.body,
+    Key? key,
+    required this.body,
   }) : super(key: key);
 
   @override

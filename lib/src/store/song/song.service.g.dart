@@ -6,10 +6,11 @@ part of 'song.service.dart';
 // StoreGenerator
 // **************************************************************************
 
-// ignore_for_file: non_constant_identifier_names, unnecessary_brace_in_string_interps, unnecessary_lambdas, prefer_expression_function_bodies, lines_longer_than_80_chars, avoid_as, avoid_annotating_with_dynamic
+// ignore_for_file: non_constant_identifier_names, unnecessary_brace_in_string_interps, unnecessary_lambdas, prefer_expression_function_bodies, lines_longer_than_80_chars, avoid_as, avoid_annotating_with_dynamic, no_leading_underscores_for_local_identifiers
 
 mixin _$SongService on _SongService, Store {
-  final _$isLoadingAtom = Atom(name: '_SongService.isLoading');
+  late final _$isLoadingAtom =
+      Atom(name: '_SongService.isLoading', context: context);
 
   @override
   bool get isLoading {
@@ -24,82 +25,55 @@ mixin _$SongService on _SongService, Store {
     });
   }
 
-  final _$songsAtom = Atom(name: '_SongService.songs');
+  late final _$songsAtom = Atom(name: '_SongService.songs', context: context);
 
   @override
-  List<SongInfo> get songs {
+  List<SongModel> get songs {
     _$songsAtom.reportRead();
     return super.songs;
   }
 
   @override
-  set songs(List<SongInfo> value) {
+  set songs(List<SongModel> value) {
     _$songsAtom.reportWrite(value, super.songs, () {
       super.songs = value;
     });
   }
 
-  final _$artistsAtom = Atom(name: '_SongService.artists');
+  late final _$isPlayingAtom =
+      Atom(name: '_SongService.isPlaying', context: context);
 
   @override
-  List<ArtistInfo> get artists {
-    _$artistsAtom.reportRead();
-    return super.artists;
+  bool get isPlaying {
+    _$isPlayingAtom.reportRead();
+    return super.isPlaying;
   }
 
   @override
-  set artists(List<ArtistInfo> value) {
-    _$artistsAtom.reportWrite(value, super.artists, () {
-      super.artists = value;
+  set isPlaying(bool value) {
+    _$isPlayingAtom.reportWrite(value, super.isPlaying, () {
+      super.isPlaying = value;
     });
   }
 
-  final _$stateAtom = Atom(name: '_SongService.state');
+  late final _$playingSongAtom =
+      Atom(name: '_SongService.playingSong', context: context);
 
   @override
-  AudioPlayerState get state {
-    _$stateAtom.reportRead();
-    return super.state;
-  }
-
-  @override
-  set state(AudioPlayerState value) {
-    _$stateAtom.reportWrite(value, super.state, () {
-      super.state = value;
-    });
-  }
-
-  final _$playingSongAtom = Atom(name: '_SongService.playingSong');
-
-  @override
-  SongInfo get playingSong {
+  SongModel? get playingSong {
     _$playingSongAtom.reportRead();
     return super.playingSong;
   }
 
   @override
-  set playingSong(SongInfo value) {
+  set playingSong(SongModel? value) {
     _$playingSongAtom.reportWrite(value, super.playingSong, () {
       super.playingSong = value;
     });
   }
 
-  final _$audioPlayerAtom = Atom(name: '_SongService.audioPlayer');
-
-  @override
-  AudioPlayer get audioPlayer {
-    _$audioPlayerAtom.reportRead();
-    return super.audioPlayer;
-  }
-
-  @override
-  set audioPlayer(AudioPlayer value) {
-    _$audioPlayerAtom.reportWrite(value, super.audioPlayer, () {
-      super.audioPlayer = value;
-    });
-  }
-
-  final _$durationAtom = Atom(name: '_SongService.duration');
+  late final _$durationAtom =
+      Atom(name: '_SongService.duration', context: context);
 
   @override
   Duration get duration {
@@ -114,7 +88,8 @@ mixin _$SongService on _SongService, Store {
     });
   }
 
-  final _$positionAtom = Atom(name: '_SongService.position');
+  late final _$positionAtom =
+      Atom(name: '_SongService.position', context: context);
 
   @override
   Duration get position {
@@ -129,32 +104,40 @@ mixin _$SongService on _SongService, Store {
     });
   }
 
-  final _$_initAsyncAction = AsyncAction('_SongService._init');
+  late final _$_initAsyncAction =
+      AsyncAction('_SongService._init', context: context);
 
   @override
   Future<void> _init() {
     return _$_initAsyncAction.run(() => super._init());
   }
 
-  final _$itemSongTapAsyncAction = AsyncAction('_SongService.itemSongTap');
+  late final _$itemSongTapAsyncAction =
+      AsyncAction('_SongService.itemSongTap', context: context);
 
   @override
-  Future itemSongTap(SongInfo it) {
+  Future itemSongTap(SongModel it) {
     return _$itemSongTapAsyncAction.run(() => super.itemSongTap(it));
   }
 
-  final _$_SongServiceActionController = ActionController(name: '_SongService');
+  late final _$playAsyncAction =
+      AsyncAction('_SongService.play', context: context);
 
   @override
-  void setState() {
-    final _$actionInfo = _$_SongServiceActionController.startAction(
-        name: '_SongService.setState');
-    try {
-      return super.setState();
-    } finally {
-      _$_SongServiceActionController.endAction(_$actionInfo);
-    }
+  Future<void> play() {
+    return _$playAsyncAction.run(() => super.play());
   }
+
+  late final _$pauseAsyncAction =
+      AsyncAction('_SongService.pause', context: context);
+
+  @override
+  Future<void> pause() {
+    return _$pauseAsyncAction.run(() => super.pause());
+  }
+
+  late final _$_SongServiceActionController =
+      ActionController(name: '_SongService', context: context);
 
   @override
   void _setDurationHandler(Duration d) {
@@ -179,27 +162,6 @@ mixin _$SongService on _SongService, Store {
   }
 
   @override
-  void _setCompletionHandler(dynamic _) {
-    final _$actionInfo = _$_SongServiceActionController.startAction(
-        name: '_SongService._setCompletionHandler');
-    try {
-      return super._setCompletionHandler(_);
-    } finally {
-      _$_SongServiceActionController.endAction(_$actionInfo);
-    }
-  }
-
-  @override
-  void _setErrorHandler(String msg) {
-    final _$actionInfo = _$_SongServiceActionController.startAction(
-        name: '_SongService._setErrorHandler');
-    try {
-      return super._setErrorHandler(msg);
-    } finally {
-      _$_SongServiceActionController.endAction(_$actionInfo);
-    }
-  }
-
   @override
   void seek(Duration v) {
     final _$actionInfo =
@@ -216,10 +178,8 @@ mixin _$SongService on _SongService, Store {
     return '''
 isLoading: ${isLoading},
 songs: ${songs},
-artists: ${artists},
-state: ${state},
+isPlaying: ${isPlaying},
 playingSong: ${playingSong},
-audioPlayer: ${audioPlayer},
 duration: ${duration},
 position: ${position}
     ''';

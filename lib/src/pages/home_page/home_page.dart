@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/animation.dart';
-
-import 'package:flutter/widgets.dart';
 import 'package:flutter_mobx/flutter_mobx.dart';
 import 'package:flutter_music/src/pages/home_page/home.store.dart';
 import 'package:flutter_music/src/shared/widgets/empty_songs.dart';
@@ -22,8 +19,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
   final homeStore = HomeStore();
-  Animation<Offset> _position;
-  AnimationController _positionC;
+  late final Animation<Offset> _position;
+  late final AnimationController _positionC;
 
   @override
   void initState() {
@@ -40,7 +37,7 @@ class _HomePageState extends State<HomePage>
 
   @override
   void dispose() {
-    _positionC?.dispose();
+    _positionC.dispose();
     mainStore.songService.dispose();
     super.dispose();
   }
@@ -61,7 +58,7 @@ class _HomePageState extends State<HomePage>
         notification.depth == 0 &&
         mainStore.songService.playingSong != null) {
       var d = notification.dragDetails;
-      if (d != null && d.delta != null) {
+      if (d != null) {
         var dy = d.delta.dy;
         if (dy > yoff) {
           // 手指向下滑动

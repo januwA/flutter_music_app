@@ -1,6 +1,9 @@
-import 'package:audioplayers/audioplayers.dart';
-import 'package:flutter_audio_query/flutter_audio_query.dart';
+import 'package:audio_service/audio_service.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:mobx/mobx.dart';
+import 'package:on_audio_query/on_audio_query.dart';
+
+import 'audio_handler.dart';
 
 part 'song.service.g.dart';
 
@@ -15,36 +18,28 @@ abstract class _SongService with Store {
   @observable
   bool isLoading = false;
 
-  FlutterAudioQuery audioQuery;
+  final OnAudioQuery _audioQuery = OnAudioQuery();
 
   /// 本地歌曲列表
   @observable
-  List<SongInfo> songs = List<SongInfo>();
+  List<SongModel> songs = <SongModel>[];
   @observable
-  List<ArtistInfo> artists = List<ArtistInfo>();
-  @observable
-  AudioPlayerState state = AudioPlayerState.STOPPED;
+  bool isPlaying = false;
 
   /// 正在播放的音乐
   @observable
-  SongInfo playingSong;
+  SongModel? playingSong;
 
-  /// 控制器
-  @observable
-  AudioPlayer audioPlayer;
+  MusicAudioHandler? _audioHandler;
+  final Map<String, SongModel> _songById = <String, SongModel>{};
 
   /// 总时长
   @observable
-  Duration duration = Duration(seconds: 1);
+  Duration duration = Duration.zero;
 
   /// 当前播放位置
   @observable
-  Duration position = Duration(seconds: 0);
-
-  @action
-  void setState() {
-    state = audioPlayer.state;
-  }
+  Duration position = Duration.zero;
 
   @action
   void _setDurationHandler(Duration d) {
@@ -57,75 +52,104 @@ abstract class _SongService with Store {
   }
 
   @action
-  void _setCompletionHandler(_) {
-    int index = songs.indexOf(playingSong);
-    int nextIndex = (index + 1) % songs.length;
-    itemSongTap(songs[nextIndex]);
-  }
-
-  @action
-  void _setErrorHandler(String msg) {
-    duration = new Duration(seconds: 0);
-    position = new Duration(seconds: 0);
-  }
-
-  @action
   Future<void> _init() async {
     isLoading = true;
-    audioQuery ??= FlutterAudioQuery();
-    songs = await audioQuery.getSongs();
-    artists = await audioQuery.getArtists();
-    audioPlayer ??= AudioPlayer();
-    AudioPlayer.logEnabled = false;
+    final hasPermission = await _audioQuery.permissionsStatus();
+    if (!hasPermission) {
+      final requested = await _audioQuery.permissionsRequest();
+      if (!requested) {
+        isLoading = false;
+        return;
+      }
+    }
+    songs = await _audioQuery.querySongs();
+    _songById
+      ..clear()
+      ..addEntries(
+        songs.map((s) => MapEntry(s.id.toString(), s)),
+      );
     isLoading = false;
 
-    // 总时长
-    audioPlayer.onDurationChanged.listen(_setDurationHandler);
+    _audioHandler ??= await AudioService.init(
+      builder: () => MusicAudioHandler(),
+      config: const AudioServiceConfig(
+        androidNotificationChannelId: 'com.ajanuw.flutter_music.channel.audio',
+        androidNotificationChannelName: 'Music Playback',
+        androidNotificationOngoing: true,
+      ),
+    );
 
-    // 播放位置变化
-    audioPlayer.onAudioPositionChanged.listen(_setPositionHandler);
+    final queue = songs.map(_toMediaItem).toList();
+    final sources = songs.map(_sourceForSong).toList();
+    await _audioHandler!.setQueue(queue, sources);
 
-    // 完成时
-    audioPlayer.onPlayerCompletion.listen(_setCompletionHandler);
+    _audioHandler!.playbackState.listen((state) {
+      isPlaying = state.playing;
+    });
 
-    // 错误时
-    audioPlayer.onPlayerError.listen(_setErrorHandler);
+    _audioHandler!.mediaItem.listen((item) {
+      if (item == null) return;
+      playingSong = _songById[item.id];
+      duration = item.duration ?? Duration.zero;
+    });
+
+    AudioService.position.listen(_setPositionHandler);
   }
 
   dispose() {
-    audioPlayer?.stop();
-    audioPlayer?.dispose();
+    _audioHandler?.stop();
   }
 
   @action
   void seek(Duration v) {
-    audioPlayer.seek(v);
+    _audioHandler?.seek(v);
   }
 
-  String getArtistArtPath(String artistId) {
-    try {
-      return artists
-              .firstWhere((i) => i.id.contains(artistId))
-              ?.artistArtPath
-              ?.trim() ??
-          "";
-    } catch (e) {
-      return "";
-    }
+  @action
+  Future<void> play() async {
+    await _audioHandler?.play();
+  }
+
+  @action
+  Future<void> pause() async {
+    await _audioHandler?.pause();
   }
 
   /// 每个song item被点击时事件处理
   @action
-  itemSongTap(SongInfo it) async {
-    if (audioPlayer.state == AudioPlayerState.PLAYING) {
-      if (it == playingSong)
-        await audioPlayer.pause();
-      else
-        await audioPlayer.play(it.filePath);
-    } else {
-      await audioPlayer.play(it.filePath);
+  itemSongTap(SongModel it) async {
+    if (_audioHandler == null) return;
+    if (isPlaying && it == playingSong) {
+      await _audioHandler!.pause();
+      return;
     }
-    setState();
-    playingSong = it;
+    final index = songs.indexOf(it);
+    if (index != -1) {
+      await _audioHandler!.skipToQueueItem(index);
+    }
+  }
+
+  MediaItem _toMediaItem(SongModel song) {
+    final artUri = song.albumId == null
+        ? null
+        : Uri.parse("content://media/external/audio/albumart/${song.albumId}");
+    return MediaItem(
+      id: song.id.toString(),
+      title: song.title,
+      artist: song.artist,
+      album: song.album,
+      duration: song.duration == null
+          ? null
+          : Duration(milliseconds: song.duration!),
+      artUri: artUri,
+    );
+  }
+
+  AudioSource _sourceForSong(SongModel song) {
+    final uri = song.uri;
+    if (uri != null && uri.isNotEmpty) {
+      return AudioSource.uri(Uri.parse(uri));
+    }
+    return AudioSource.uri(Uri.file(song.data));
   }
 }

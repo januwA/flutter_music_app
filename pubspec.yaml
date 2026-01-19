@@ -1,29 +1,33 @@
 name: flutter_music
 description: play user local music.
-version: 2.0.0
+version: 3.0.0
 
 environment:
-  sdk: '>=2.7.0 <3.0.0'
+  sdk: ">=2.12.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
 
-  cupertino_icons: ^1.0.0
-  flutter_audio_query: "^0.3.5+6"
-  audioplayers: ^0.16.1
-  shared_preferences: ^0.5.3+4
-  mobx: ^1.2.1+2
-  flutter_mobx: ^1.1.0+2
+  cupertino_icons: ^1.0.8
+  on_audio_query: ^2.9.0
+  just_audio: ^0.9.39
+  audio_service: ^0.18.15
+  audio_session: ^0.1.21
+  shared_preferences: ^2.3.2
+  mobx: ^2.3.0
+  flutter_mobx: ^2.2.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  build_runner:
-  mobx_codegen:
-    
+  build_runner: ^2.4.12
+  mobx_codegen: ^2.6.0
+  flutter_lints: ^6.0.0
+
 dependency_overrides:
-  analyzer: '0.39.14'
+  on_audio_query_android:
+    path: third_party/on_audio_query_android
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec
 
@@ -35,7 +39,7 @@ flutter:
   uses-material-design: true
   # To add assets to your application, add an assets section, like this:
   assets:
-   - assets/i.jpg
+    - assets/i.jpg
   #  - images/a_dot_ham.jpeg
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware.

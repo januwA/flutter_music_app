@@ -9,7 +9,7 @@ abstract class _HomeStore with Store {
     _init();
   }
   @observable
-  SharedPreferences _prefs;
+  SharedPreferences? _prefs;
 
   ///
   @observable
@@ -18,13 +18,13 @@ abstract class _HomeStore with Store {
   @action
   Future<void> _init() async {
     _prefs = await SharedPreferences.getInstance();
-    isGrid = _prefs.getBool('isGrid') ?? false;
+    isGrid = _prefs!.getBool('isGrid') ?? false;
   }
 
   /// 设置页面布局
   @action
   void setLayout() {
-    _prefs.setBool('isGrid', !isGrid);
+    _prefs?.setBool('isGrid', !isGrid);
     isGrid = !isGrid;
   }
 }
