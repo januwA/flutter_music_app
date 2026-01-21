@@ -7,6 +7,7 @@ import 'package:flutter_music/src/store/main/main.store.dart';
 class PlayingSongView extends StatelessWidget {
   /// 把一个值从一个范围映射到另一个范围
   double _ourMap(num v, num start1, num stop1, num start2, num stop2) {
+    if (stop1 - start1 == 0) return start2.toDouble();
     return (v - start1) / (stop1 - start1) * (stop2 - start2) + start2;
   }
 

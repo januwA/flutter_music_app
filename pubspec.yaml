@@ -17,6 +17,10 @@ dependencies:
   shared_preferences: ^2.3.2
   mobx: ^2.3.0
   flutter_mobx: ^2.2.1
+  path: ^1.9.1
+  path_provider: ^2.1.5
+  just_audio_windows: ^0.2.2
+  audio_service_win: ^0.0.2
 
 dev_dependencies:
   flutter_test:

@@ -1,5 +1,7 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'dart:io';
 import 'package:flutter_music/src/store/main/main.store.dart';
 
 class SongTitle extends StatelessWidget {
@@ -43,22 +45,38 @@ class SongTitle extends StatelessWidget {
     var theme = Theme.of(context);
     final title = song.title;
     final titleChar = title.isNotEmpty ? title[0] : '?';
-    final artwork = QueryArtworkWidget(
-      id: song.id,
-      type: ArtworkType.AUDIO,
-      artworkFit: fit,
-      artworkBorder: BorderRadius.circular(borderRadius),
-      artworkWidth: width ?? 50,
-      artworkHeight: height ?? 50,
-      nullArtworkWidget: grid
-          ? Image.asset(
-              'assets/i.jpg',
-              fit: fit,
-              height: height,
-              width: width,
-            )
-          : Text(titleChar),
-    );
+    final bool isWindows = !kIsWeb && Platform.isWindows;
+    
+    final artwork = isWindows || song.id == 0 // 处理伪造 ID 或 Windows
+        ? (grid
+            ? Image.asset(
+                'assets/i.jpg',
+                fit: fit,
+                height: height,
+                width: width,
+              )
+            : Container(
+                width: width ?? 50,
+                height: height ?? 50,
+                alignment: Alignment.center,
+                child: Text(titleChar),
+              ))
+        : QueryArtworkWidget(
+            id: song.id,
+            type: ArtworkType.AUDIO,
+            artworkFit: fit,
+            artworkBorder: BorderRadius.circular(borderRadius),
+            artworkWidth: width ?? 50,
+            artworkHeight: height ?? 50,
+            nullArtworkWidget: grid
+                ? Image.asset(
+                    'assets/i.jpg',
+                    fit: fit,
+                    height: height,
+                    width: width,
+                  )
+                : Text(titleChar),
+          );
 
     if (grid) {
       return artwork;

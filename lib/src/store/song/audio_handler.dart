@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
@@ -12,8 +14,10 @@ class MusicAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler 
   }
 
   Future<void> _init() async {
-    final session = await AudioSession.instance;
-    await session.configure(const AudioSessionConfiguration.music());
+    if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+      final session = await AudioSession.instance;
+      await session.configure(const AudioSessionConfiguration.music());
+    }
 
     _notifyAudioHandlerAboutPlaybackEvents();
 
@@ -29,16 +33,61 @@ class MusicAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler 
       if (item == null) return;
       mediaItem.add(item.copyWith(duration: duration));
     });
+
+    // 显式监听播放状态切换
+    _player.playingStream.listen((playing) {
+      _updatePlaybackState();
+    });
+
+    // 显式监听处理状态切换 (loading, ready, buffering, completed)
+    _player.processingStateStream.listen((state) {
+      _updatePlaybackState();
+    });
+
+    _player.positionStream.listen((pos) {
+      _updatePlaybackState();
+    });
+  }
+
+  void _updatePlaybackState() {
+    final playing = _player.playing;
+    playbackState.add(
+      playbackState.value.copyWith(
+        controls: [
+          MediaControl.skipToPrevious,
+          playing ? MediaControl.pause : MediaControl.play,
+          MediaControl.stop,
+          MediaControl.skipToNext,
+        ],
+        systemActions: const {
+          MediaAction.seek,
+          MediaAction.seekForward,
+          MediaAction.seekBackward,
+        },
+        androidCompactActionIndices: const [0, 1, 3],
+        processingState: _transformProcessingState(_player.processingState),
+        playing: playing,
+        updatePosition: _player.position,
+        bufferedPosition: _player.bufferedPosition,
+        speed: _player.speed,
+        queueIndex: _player.currentIndex,
+      ),
+    );
   }
 
   Future<void> setQueue(
     List<MediaItem> items,
     List<AudioSource> sources,
   ) async {
+    debugPrint("Setting queue with ${items.length} items");
     queue.add(items);
-    await _player.setAudioSource(
-      ConcatenatingAudioSource(children: sources),
-    );
+    try {
+      await _player.setAudioSource(
+        ConcatenatingAudioSource(children: sources),
+      );
+    } catch (e) {
+      debugPrint("Error setting audio source: $e");
+    }
   }
 
   @override
@@ -64,36 +113,24 @@ class MusicAudioHandler extends BaseAudioHandler with QueueHandler, SeekHandler 
 
   @override
   Future<void> skipToQueueItem(int index) async {
-    if (index < 0 || index >= queue.value.length) return;
-    await _player.seek(Duration.zero, index: index);
-    await _player.play();
+    debugPrint("skipToQueueItem called for index: $index");
+    if (index < 0 || index >= queue.value.length) {
+      debugPrint("Index out of bounds for queue");
+      return;
+    }
+    try {
+      await _player.seek(Duration.zero, index: index);
+      debugPrint("Player seeked, starting playback...");
+      await _player.play();
+    } catch (e) {
+      debugPrint("Error during playback: $e");
+    }
   }
 
   void _notifyAudioHandlerAboutPlaybackEvents() {
     _player.playbackEventStream.listen((event) {
-      final playing = _player.playing;
-      playbackState.add(
-        playbackState.value.copyWith(
-          controls: [
-            MediaControl.skipToPrevious,
-            playing ? MediaControl.pause : MediaControl.play,
-            MediaControl.stop,
-            MediaControl.skipToNext,
-          ],
-          systemActions: const {
-            MediaAction.seek,
-            MediaAction.seekForward,
-            MediaAction.seekBackward,
-          },
-          androidCompactActionIndices: const [0, 1, 3],
-          processingState: _transformProcessingState(_player.processingState),
-          playing: playing,
-          updatePosition: _player.position,
-          bufferedPosition: _player.bufferedPosition,
-          speed: _player.speed,
-          queueIndex: event.currentIndex,
-        ),
-      );
+      debugPrint("Player event: playing=${_player.playing}, state=${_player.processingState}, position=${_player.position}");
+      _updatePlaybackState();
     });
   }
 

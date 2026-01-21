@@ -39,18 +39,24 @@ class SearchPage extends SearchDelegate<String> {
   /// 用户从搜索页面提交搜索后显示的结果
   @override
   Widget buildResults(BuildContext context) {
-    var filterSons = mainStore.songService.songs
-        .where((SongModel s) => s.title.contains(query.trim()))
-        .toList();
+    final search = query.trim().toLowerCase();
+    var filterSons = mainStore.songService.songs.where((SongModel s) {
+      final title = s.title.toLowerCase();
+      final artist = (s.artist ?? "").toLowerCase();
+      return title.contains(search) || artist.contains(search);
+    }).toList();
     return _buildListView(filterSons, context);
   }
 
   /// 当用户在搜索字段中键入查询时，在搜索页面正文中显示的建议
   @override
   Widget buildSuggestions(BuildContext context) {
-    var filterSons = mainStore.songService.songs
-        .where((SongModel s) => s.title.contains(query.trim()))
-        .toList();
+    final search = query.trim().toLowerCase();
+    var filterSons = mainStore.songService.songs.where((SongModel s) {
+      final title = s.title.toLowerCase();
+      final artist = (s.artist ?? "").toLowerCase();
+      return title.contains(search) || artist.contains(search);
+    }).toList();
     return _buildListView(filterSons, context);
   }
 

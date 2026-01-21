@@ -1,7 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:mobx/mobx.dart';
 import 'package:on_audio_query/on_audio_query.dart';
+import 'dart:io';
+import 'package:path/path.dart' as p;
 
 import 'audio_handler.dart';
 
@@ -54,15 +57,21 @@ abstract class _SongService with Store {
   @action
   Future<void> _init() async {
     isLoading = true;
-    final hasPermission = await _audioQuery.permissionsStatus();
-    if (!hasPermission) {
-      final requested = await _audioQuery.permissionsRequest();
-      if (!requested) {
-        isLoading = false;
-        return;
+
+    if (Platform.isWindows) {
+      songs = await _scanWindowsMusic();
+    } else {
+      final hasPermission = await _audioQuery.permissionsStatus();
+      if (!hasPermission) {
+        final requested = await _audioQuery.permissionsRequest();
+        if (!requested) {
+          isLoading = false;
+          return;
+        }
       }
+      songs = await _audioQuery.querySongs();
     }
-    songs = await _audioQuery.querySongs();
+
     _songById
       ..clear()
       ..addEntries(
@@ -84,6 +93,7 @@ abstract class _SongService with Store {
     await _audioHandler!.setQueue(queue, sources);
 
     _audioHandler!.playbackState.listen((state) {
+      debugPrint("PlaybackState changed: playing=${state.playing}, state=${state.processingState}");
       isPlaying = state.playing;
     });
 
@@ -94,6 +104,41 @@ abstract class _SongService with Store {
     });
 
     AudioService.position.listen(_setPositionHandler);
+  }
+
+  Future<List<SongModel>> _scanWindowsMusic() async {
+    final home = Platform.environment['USERPROFILE'] ?? Platform.environment['HOME'];
+    if (home == null) return [];
+
+    final musicDirPath = p.join(home, 'Music');
+    final musicDir = Directory(musicDirPath);
+
+    if (!await musicDir.exists()) return [];
+
+    List<SongModel> windowsSongs = [];
+    try {
+      final files = musicDir.listSync(recursive: true);
+      for (var file in files) {
+        final extension = file.path.split('.').last.toLowerCase();
+        if (file is File && 
+            ['mp3', 'm4a', 'flac', 'wav'].contains(extension)) {
+          // 按照 on_audio_query 的内部 Map 键名进行伪造，确保 getter 能拿到数据
+          final songMap = {
+            "_id": file.path.hashCode,
+            "title": p.basenameWithoutExtension(file.path),
+            "artist": "Unknown Artist",
+            "album": "Unknown Album",
+            "_data": file.path,      // getter 'data' 对应键名 '_data'
+            "_uri": file.uri.toString(), // getter 'uri' 对应键名 '_uri'
+            "duration": 0,
+          };
+          windowsSongs.add(SongModel(songMap));
+        }
+      }
+    } catch (e) {
+      debugPrint("Error scanning Windows music: $e");
+    }
+    return windowsSongs;
   }
 
   dispose() {
@@ -118,14 +163,21 @@ abstract class _SongService with Store {
   /// 每个song item被点击时事件处理
   @action
   itemSongTap(SongModel it) async {
-    if (_audioHandler == null) return;
+    debugPrint("Item tapped: ${it.title}, path: ${it.data}");
+    if (_audioHandler == null) {
+      debugPrint("Audio handler is null");
+      return;
+    }
     if (isPlaying && it == playingSong) {
       await _audioHandler!.pause();
       return;
     }
     final index = songs.indexOf(it);
     if (index != -1) {
+      debugPrint("Skipping to index: $index");
       await _audioHandler!.skipToQueueItem(index);
+    } else {
+      debugPrint("Song not found in list");
     }
   }
 
@@ -146,9 +198,15 @@ abstract class _SongService with Store {
   }
 
   AudioSource _sourceForSong(SongModel song) {
+    if (Platform.isWindows) {
+      debugPrint("Creating Windows source for: ${song.data}");
+      return AudioSource.file(song.data);
+    }
     final uri = song.uri;
     if (uri != null && uri.isNotEmpty) {
-      return AudioSource.uri(Uri.parse(uri));
+      if (uri.startsWith('content://')) {
+        return AudioSource.uri(Uri.parse(uri));
+      }
     }
     return AudioSource.uri(Uri.file(song.data));
   }

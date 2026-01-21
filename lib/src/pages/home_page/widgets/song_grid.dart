@@ -9,13 +9,19 @@ class SongGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return SliverPadding(
       padding: EdgeInsets.symmetric(horizontal: 8.0),
-      sliver: SliverGrid.count(
-        crossAxisSpacing: 4.0,
-        crossAxisCount: 2,
-        childAspectRatio: 0.7,
-        children: <Widget>[
-          for (SongModel song in mainStore.songService.songs) _SongGridItem(song),
-        ],
+      sliver: SliverGrid(
+        gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: 200.0,
+          mainAxisSpacing: 4.0,
+          crossAxisSpacing: 4.0,
+          childAspectRatio: 0.7,
+        ),
+        delegate: SliverChildBuilderDelegate(
+          (BuildContext context, int index) {
+            return _SongGridItem(mainStore.songService.songs[index]);
+          },
+          childCount: mainStore.songService.songs.length,
+        ),
       ),
     );
   }
@@ -41,9 +47,29 @@ class _SongGridItem extends StatelessWidget {
                 height: 95,
               ),
             ),
-            ListTile(
-              title: OverflowText(song.title),
-              subtitle: OverflowText(song.album ?? ''),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8.0, 8.0, 8.0, 12.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    height: 40.0, // 固定两行文字的高度，解决对齐问题
+                    alignment: Alignment.centerLeft,
+                    child: OverflowText(
+                      song.title,
+                      maxLines: 2,
+                    ),
+                  ),
+                  const SizedBox(height: 4.0),
+                  Opacity(
+                    opacity: 0.7,
+                    child: OverflowText(
+                      song.album ?? 'Unknown Album',
+                      maxLines: 1,
+                    ),
+                  ),
+                ],
+              ),
             )
           ],
         ),
